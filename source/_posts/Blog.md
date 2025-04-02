@@ -91,3 +91,12 @@ And also remember to add the following command for futher configuration.
 pm2 startup
 pm2 save
 ```
+
+# Add Comment System
+In the `_config.stellar.yml` configure file, 
+
+# Blog Update
+Anytime you update the settings of the blog. Restart the pm2 to enable the new setting.
+```bash
+sudo pm2 restart hexo
+```
