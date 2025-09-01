@@ -1,3 +1,12 @@
+---
+title: C++智能指针
+date: 2025-09-01 17:07:00
+tags:
+    - C++
+    - Smart Pointer
+    - Memory Management
+---
+
 # C++智能指针
 ## 种类
 三种。
