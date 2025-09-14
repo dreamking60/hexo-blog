@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="#2196F3">
+  <path d="M8 3H5C3.9 3 3 3.9 3 5V8C3 9.1 3.9 10 5 10H8C9.1 10 10 9.1 10 8V5C10 3.9 9.1 3 8 3ZM8 8H5V5H8V8Z"/>
+  <path d="M19 3H16C14.9 3 14 3.9 14 5V8C14 9.1 14.9 10 16 10H19C20.1 10 21 9.1 21 8V5C21 3.9 20.1 3 19 3ZM19 8H16V5H19V8Z"/>
+  <path d="M8 14H5C3.9 14 3 14.9 3 16V19C3 20.1 3.9 21 5 21H8C9.1 21 10 20.1 10 19V16C10 14.9 9.1 14 8 14ZM8 19H5V16H8V19Z"/>
+  <path d="M19 14H16C14.9 14 14 14.9 14 16V19C14 20.1 14.9 21 16 21H19C20.1 21 21 20.1 21 19V16C21 14.9 20.1 14 19 14ZM19 19H16V16H19V19Z"/>
+  <text x="12" y="15" font-family="Arial" font-size="5" text-anchor="middle" fill="#2196F3">Web</text>
+</svg>
