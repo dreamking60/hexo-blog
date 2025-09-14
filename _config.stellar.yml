@@ -39,44 +39,44 @@ menubar:
       icon: solar:home-2-bold-duotone
       title: 首页
       url: /
-    - id: cpp
+    - id: Cpp
       theme: '#3DC550'
-      icon: solar:programming-bold-duotone
+      icon: '<img src="/images/categories/cpp.svg" height="24" width="24"/>'
       title: C++
       url: /categories/cpp/
     - id: security
       theme: '#F44336'
-      icon: solar:lock-password-bold-duotone
+      icon: '<img src="/images/categories/security.svg" height="24" width="24"/>'
       title: Web安全
       url: /categories/security/
     - id: ml
       theme: '#FA6400'
-      icon: solar:cpu-bold-duotone
+      icon: '<img src="/images/categories/ml.svg" height="24" width="24"/>'
       title: 机器学习
       url: /categories/machine-learning/
     - id: android
       theme: '#4CAF50'
-      icon: solar:smartphone-2-bold-duotone
+      icon: '<img src="/images/categories/android.svg" height="24" width="24"/>'
       title: Android
       url: /categories/android/
-    - id: webdev
+    - id: WebDev
       theme: '#2196F3'
-      icon: solar:code-square-bold-duotone
+      icon: '<img src="/images/categories/webdev.svg" height="24" width="24"/>'
       title: Web开发
       url: /categories/web-dev/
     - id: sysadmin
       theme: '#607D8B'
-      icon: solar:server-bold-duotone
+      icon: '<img src="/images/categories/sysadmin.svg" height="24" width="24"/>'
       title: System Administration
       url: /categories/system-administration/
     - id: debugging
       theme: '#FF9800'
-      icon: solar:bug-bold-duotone
+      icon: '<img src="/images/categories/debugging.svg" height="24" width="24"/>'
       title: Debugging
       url: /categories/debugging/
     - id: general
       theme: '#9C27B0'
-      icon: solar:document-bold-duotone
+      icon: '<img src="/images/categories/general.svg" height="24" width="24"/>'
       title: General
       url: /categories/general/
 
