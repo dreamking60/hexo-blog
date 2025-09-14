@@ -58,7 +58,7 @@ site_tree:
   # 主页配置
   home:
     leftbar: welcome, recent
-    rightbar: ghinfo 
+    rightbar: ghrepo 
   # 博客列表页配置
   index_blog:
     base_dir: blog # 只影响自动生成的页面路径
@@ -305,9 +305,9 @@ comments:
 ######## Footer ########
 footer:
   social:
-    # github:
-    #   icon: '<img src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/08a41b181ce68.svg"/>'
-    #   url: /
+    github:
+      icon: '<img src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/08a41b181ce68.svg"/>'
+      url: https://github.com/dreamking60
     # music:
     #   icon: '<img src="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/social/3845874.svg"/>'
     #   url: /
@@ -437,6 +437,10 @@ data_services:
   ghinfo:
     js: /js/services/ghinfo.js
     username: dreamking60
+  # GitHub仓库信息配置
+  github:
+    username: dreamking60
+    repo: hexo-blog
   # 网格布局类
   sites:
     js: /js/services/sites.js
