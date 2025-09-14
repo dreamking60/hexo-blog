@@ -58,7 +58,7 @@ site_tree:
   # 主页配置
   home:
     leftbar: welcome, recent
-    rightbar: ghrepo 
+    rightbar: ghinfo 
   # 博客列表页配置
   index_blog:
     base_dir: blog # 只影响自动生成的页面路径
@@ -436,6 +436,7 @@ data_services:
     api: 
   ghinfo:
     js: /js/services/ghinfo.js
+    username: dreamking60
   # 网格布局类
   sites:
     js: /js/services/sites.js
