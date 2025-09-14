@@ -36,7 +36,7 @@ menubar:
     # url: 点击跳转到哪，支持相对路径和绝对路径
     - id: post
       theme: '#1BCDFC'
-      icon: solar:home-2-bold-duotone
+      icon: '<img src="/images/categories/home.svg" height="24" width="24"/>'
       title: 首页
       url: /
     - id: Cpp
