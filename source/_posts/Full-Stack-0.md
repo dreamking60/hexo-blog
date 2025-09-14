@@ -1,7 +1,7 @@
 ---
 title: Full-Stack-0
 date: 2025-03-17 21:08:53
-categories: Web Development
+categories: WebDev
 tags:
     - Full-Stack
     - HTML
