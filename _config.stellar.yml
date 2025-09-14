@@ -64,6 +64,21 @@ menubar:
       icon: solar:code-square-bold-duotone
       title: Web开发
       url: /categories/web-dev/
+    - id: sysadmin
+      theme: '#607D8B'
+      icon: solar:server-bold-duotone
+      title: System Administration
+      url: /categories/system-administration/
+    - id: debugging
+      theme: '#FF9800'
+      icon: solar:bug-bold-duotone
+      title: Debugging
+      url: /categories/debugging/
+    - id: general
+      theme: '#9C27B0'
+      icon: solar:document-bold-duotone
+      title: General
+      url: /categories/general/
 
 
 ######## Main ########
