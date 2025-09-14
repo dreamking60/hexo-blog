@@ -29,7 +29,7 @@ The server and the web browser communicate with each other using the HTTP protoc
     - The browser has fetched the contents of the page exampleapp from the server.
     - And has downloaded the image kuva.png
     
-    ![image.png](Full%20Stack%200%201b569c1e0db980b7a1ebee7e62b95b96/image.png)
+    ![image.png](/images/posts/Full-Stack-0/image.png)
     
 - Click the first event reveals more information
     - General
@@ -177,7 +177,7 @@ xhttp.send()
 
 The console.log(data) will shown in the console of the local browser.
 
-![image.png](Full%20Stack%200%201b569c1e0db980b7a1ebee7e62b95b96/image%201.png)
+![image.png](/images/posts/Full-Stack-0/image%201.png)
 
 # Event handlers and Callback functions
 
@@ -263,7 +263,7 @@ The topmost node of the DOM tree of an HTML document is called the document obje
 
 We can access the document object in the console.
 
-![image.png](Full%20Stack%200%201b569c1e0db980b7a1ebee7e62b95b96/image%202.png)
+![image.png](/images/posts/Full-Stack-0/image%202.png)
 
 We can add a new note to the page through the console.
 
@@ -333,7 +333,7 @@ Classes are [attributes](https://developer.mozilla.org/en-US/docs/Web/HTML/Glob
 
 The CSS rule defines that elements with the *container* class will be outlined with a one-pixel wide [border](https://developer.mozilla.org/en-US/docs/Web/CSS/border). It also sets 10-pixel [padding](https://developer.mozilla.org/en-US/docs/Web/CSS/padding) on the element. This adds some empty space between the element's content and the border.
 
-![css.png](Full%20Stack%200%201b569c1e0db980b7a1ebee7e62b95b96/css.png)
+![css.png](/images/posts/Full-Stack-0/css.png)
 
 # Loading a page containing JavaScript - review
 
@@ -360,9 +360,9 @@ When the button on the form is clicked, the browser will send the user input to 
 
 It is an [HTTP POST](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST) request to the server address *new_note*. The server responds with HTTP status code 302. This is a [URL redirect](https://en.wikipedia.org/wiki/URL_redirection), with which the server asks the browser to perform a new HTTP GET request to the address defined in the header's *Location* - the address `/exampleapp/*notes*`.
 
-![image.png](Full%20Stack%200%201b569c1e0db980b7a1ebee7e62b95b96/image%203.png)
+![image.png](/images/posts/Full-Stack-0/image%203.png)
 
-![image.png](Full%20Stack%200%201b569c1e0db980b7a1ebee7e62b95b96/image%204.png)
+![image.png](/images/posts/Full-Stack-0/image%204.png)
 
 So, the browser reloads the Notes page. The reload causes three more HTTP requests: fetching the style sheet (main.css), the JavaScript code (main.js), and the raw data of the notes (data.json).
 
@@ -370,7 +370,7 @@ The network tab also shows the data submitted with the form:
 
 The Form Data dropdown is within the new Payload tab, located to the right of the Headers tab.
 
-![image.png](Full%20Stack%200%201b569c1e0db980b7a1ebee7e62b95b96/image%205.png)
+![image.png](/images/posts/Full-Stack-0/image%205.png)
 
 The code in the server for the POST request is quite simple.
 
@@ -513,11 +513,11 @@ Open the *Network* tab and empty it. When you now create a new note, you'll no
 
 The POST request to the address *new_note_spa* contains the new note as JSON data containing both the content of the note (*content*) and the timestamp (*date*):
 
-![spa_request.png](Full%20Stack%200%201b569c1e0db980b7a1ebee7e62b95b96/spa_request.png)
+![spa_request.png](/images/posts/Full-Stack-0/spa_request.png)
 
 The *Content-Type* header of the request tells the server that the included data is represented in JSON format.
 
-![image.png](Full%20Stack%200%201b569c1e0db980b7a1ebee7e62b95b96/image%206.png)
+![image.png](/images/posts/Full-Stack-0/image%206.png)
 
 Without this header, the server would not know how to correctly parse the data.
 
@@ -695,7 +695,7 @@ Set p color to red.
 
 The whole structure is called a ruleset.
 
-![image.png](Full%20Stack%200%201b569c1e0db980b7a1ebee7e62b95b96/image%207.png)
+![image.png](/images/posts/Full-Stack-0/image%207.png)
 
 **Selector**
 

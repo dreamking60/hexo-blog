@@ -36,20 +36,20 @@ Then create a new virtual machine in VirtualBox.
    - Install Guest Additions for better usage
    - Use UEFI for better initial boot
 
-![setup](.\vm-configuration\virtualbox-win10.png)
+![setup](/images/posts/CSE434-VM-Configuration/virtualbox-win10.png)
 
 4. Start the VM and install Windows 10
    - Insert the Windows 10 ISO file into the virtual DVD drive
    - Boot the VM and follow the installation wizard
 
-![init](.\vm-configuration\win10-initial-1.png)
+![init](/images/posts/CSE434-VM-Configuration/win10-initial-1.png)
 
 5. ping 8.8.8.8 and snapshot
    - Open command prompt
    - Type "ping 8.8.8.8" and press Enter
    - If you get a response, your VM is connected to the internet
 
-![ping](.\vm-configuration\win10-ping.png)
+![ping](/images/posts/CSE434-VM-Configuration/win10-ping.png)
 
 create a snapshot of windows.
 
