@@ -1,6 +1,7 @@
 ---
 title: GDB Script Basics and Examples
 date: 2025-09-08 01:11:00
+categories: Debugging
 tags:
   - GDB
   - Debugging

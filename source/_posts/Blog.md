@@ -1,6 +1,7 @@
 ---
 title: Hexo Blog Build
 date: 2025-03-11 11:20:24
+categories: Web Development
 tags:
     - hexo
     - blog

@@ -36,32 +36,32 @@ menubar:
     # url: 点击跳转到哪，支持相对路径和绝对路径
     - id: post
       theme: '#1BCDFC'
-      icon: solar:documents-bold-duotone
+      icon: solar:home-2-bold-duotone
       title: 首页
       url: /
     - id: cpp
       theme: '#3DC550'
-      icon: solar:code-bold-duotone
+      icon: solar:programming-bold-duotone
       title: C++
       url: /categories/cpp/
     - id: security
       theme: '#F44336'
-      icon: solar:shield-bold-duotone
+      icon: solar:lock-password-bold-duotone
       title: Web安全
       url: /categories/security/
     - id: ml
       theme: '#FA6400'
-      icon: solar:brain-bold-duotone
+      icon: solar:cpu-bold-duotone
       title: 机器学习
       url: /categories/machine-learning/
     - id: android
       theme: '#4CAF50'
-      icon: solar:smartphone-bold-duotone
+      icon: solar:smartphone-2-bold-duotone
       title: Android
       url: /categories/android/
     - id: webdev
       theme: '#2196F3'
-      icon: solar:html5-bold-duotone
+      icon: solar:code-square-bold-duotone
       title: Web开发
       url: /categories/web-dev/
 

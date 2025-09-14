@@ -1,6 +1,7 @@
 ---
 title: C++ Pointer & Reference
 date: 2025-09-02 00:30:00
+categories: C++
 tags:
     - C++
     - Pointer

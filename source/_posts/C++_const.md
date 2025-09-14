@@ -1,6 +1,7 @@
 ---
 title: "C++中的const详解"
 date: 2025-09-02 01:00:00
+categories: C++
 tags:
     - C++
     - const

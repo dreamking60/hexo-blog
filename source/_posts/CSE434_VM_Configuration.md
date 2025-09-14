@@ -1,6 +1,7 @@
 ---
 title: CSE434 VM Configuration
 date: 2025-09-14 08:01:00
+categories: System Administration
 tags:
   - CSE434
   - Virtual Machine
