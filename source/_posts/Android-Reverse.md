@@ -1,6 +1,7 @@
 ---
 title: Android-Reverse
 date: 2025-03-11 23:18:07
+categories: Android
 tags:
     - Android
     - Smali

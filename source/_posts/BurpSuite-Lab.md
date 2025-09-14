@@ -1,6 +1,7 @@
 ---
 title: BurpSuite_Lab
 date: 2025-03-11 23:04:30
+categories: Security
 tags:
     - Burp Suite
     - CTF

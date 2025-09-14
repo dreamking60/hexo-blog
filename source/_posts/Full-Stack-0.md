@@ -1,7 +1,12 @@
 ---
 title: Full-Stack-0
 date: 2025-03-17 21:08:53
-tags: Full-Stack, HTML, CSS, mermaid
+categories: Web Development
+tags:
+    - Full-Stack
+    - HTML
+    - CSS
+    - mermaid
 ---
 # Full Stack 0
 

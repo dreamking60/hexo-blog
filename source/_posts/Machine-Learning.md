@@ -1,6 +1,7 @@
 ---
 title: 机器学习核心知识点系统总结
 date: 2025-09-03 13:01:00
+categories: Machine Learning
 tags:
   - Machine Learning
   - Logistic Regression

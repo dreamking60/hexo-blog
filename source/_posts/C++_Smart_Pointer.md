@@ -1,6 +1,7 @@
 ---
 title: C++智能指针
 date: 2025-09-01 17:07:00
+categories: C++
 tags:
     - C++
     - Smart Pointer
