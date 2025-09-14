@@ -1,3 +1,12 @@
+---
+title: CSE434 VM Configuration
+date: 2025-09-14 08:01:00
+tags:
+  - CSE434
+  - Virtual Machine
+  - VirtualBox
+---
+
 # CSE434 VM Configuration
 
 ## VirtualBox
@@ -133,7 +142,7 @@ for kali:
    ```
    - restart the network service:
    ```bash
-   sudo service networking restart
+sudo systemctl restart networking
    ```
 
 for windows:
