@@ -1,0 +1,51 @@
+# Stellar 主题侧边栏组件配置
+# 更多组件配置请参考：https://xaoxuu.com/wiki/stellar/widgets/
+
+# GitHub 用户信息组件
+ghuser:
+  layout: ghuser
+  username: dreamking60  # 你的 GitHub 用户名
+  avatar: true           # 显示头像
+  menu: true            # 显示菜单
+
+# 欢迎组件
+welcome:
+  layout: markdown
+  title: 欢迎欢迎
+  content: |
+    欢迎使用 [Stellar](https://github.com/xaoxuu/hexo-theme-stellar/) 主题，下面是您的入门指南，祝您使用愉快！
+    <br>
+    **第一步**<br>
+    创建 `blog/_config.stellar.yml` 文件，在此文件中填写需要自定义的主题配置。
+    <br>
+    **第二步**<br>
+    创建 `blog/source/_data/widgets.yml` 文件，此文件中填写需要自定义的侧边栏组件，例如 `welcome` 组件。
+    <br>
+    如果有任何疑问，请先查阅 [文档](https://xaoxuu.com/wiki/stellar/)，如果文档中没有提供，请提 [issue](https://github.com/xaoxuu/hexo-theme-stellar/issues/) 向开发者询问。
+
+# 最近文章组件
+recent:
+  layout: recent
+  rss: /atom.xml  # 需要安装 hexo-generator-feed
+  limit: 5        # 显示文章数量
+
+# 标签云组件
+tagcloud:
+  layout: tagcloud
+  title: 标签云
+  min_font: 12
+  max_font: 24
+  amount: 100
+  orderby: name
+  order: 1
+  color: false
+  show_count: false
+
+# 目录组件
+toc:
+  layout: toc
+  list_number: false
+  min_depth: 2
+  max_depth: 5
+  fallback: recent
+  collapse: false

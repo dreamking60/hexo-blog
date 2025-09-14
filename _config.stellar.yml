@@ -58,7 +58,7 @@ site_tree:
   # 主页配置
   home:
     leftbar: welcome, recent
-    rightbar: ghinfo 
+    rightbar: ghuser, ghinfo 
   # 博客列表页配置
   index_blog:
     base_dir: blog # 只影响自动生成的页面路径
@@ -84,7 +84,7 @@ site_tree:
   post:
     menu_id: post # 未在 front-matter 中指定 menu_id 时，layout 为 post 的页面默认使用这里配置的 menu_id
     leftbar: related, recent # for pages using 'layout:post'
-    rightbar: ghrepo, toc
+    rightbar: ghuser, ghrepo, toc
   # 博客专栏文章内页配置
   topic:
     menu_id: post
@@ -92,7 +92,7 @@ site_tree:
   wiki:
     menu_id: wiki # 未在 front-matter 中指定 menu_id 时，layout 为 wiki 的页面默认使用这里配置的 menu_id
     leftbar: tree, related, recent # for wiki
-    rightbar: ghrepo, toc
+    rightbar: ghuser, ghrepo, toc
   # 笔记本列表页配置
   notebooks:
     base_dir: notebooks # 笔记本列表页的路径。以及未指定 base_dir 的笔记本的路径前缀。
