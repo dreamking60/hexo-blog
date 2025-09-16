@@ -49,3 +49,23 @@ toc:
   max_depth: 5
   fallback: recent
   collapse: false
+
+# C++ 学习计划导航组件
+plan_nav:
+  layout: markdown
+  title: C++ 学习计划
+  content: |
+    📚 **4周系统学习计划**
+    
+    🔗 **快速导航**
+    - [📖 计划概览](/plan/)
+    - [📅 第一周：基础语法](/plan/week1/)
+    - [🏗️ 第二周：面向对象](/plan/week2/) 
+    - [⚡ 第三周：STL与高级特性](/plan/week3/)
+    - [🚀 第四周：高级主题与实战](/plan/week4/)
+    
+    💡 **学习进度**
+    - [ ] Week 1: 基础语法与内存管理
+    - [ ] Week 2: 面向对象编程
+    - [ ] Week 3: STL与高级特性
+    - [ ] Week 4: 高级主题与实战

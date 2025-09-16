@@ -44,6 +44,11 @@ menubar:
       icon: '<img src="/images/categories/general.svg" height="24" width="24"/>'
       title: Notes
       url: /notes/
+    - id: plan
+      theme: '#FF9800'
+      icon: '<img src="/images/categories/plan.svg" height="24" width="24"/>'
+      title: Study Plan
+      url: /plan/
     - id: about
       theme: '#9C27B0'
       icon: '<img src="/images/categories/general.svg" height="24" width="24"/>'
@@ -133,6 +138,11 @@ site_tree:
     '404': '/404.html'
     leftbar: recent, timeline
     rightbar: timeline
+  # 学习计划页面配置
+  plan:
+    menu_id: plan
+    leftbar: plan_nav, recent
+    rightbar: toc
   # 其它自定义页面配置 layout: page
   page:
     leftbar: recent
