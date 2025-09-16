@@ -23,61 +23,68 @@ permalink: /plan/week3/
 
 ## 每日计划
 
-### [第15天：STL容器](/plan/week3/day15/)
+### [第15天：STL容器](/plan/week3/day15/) ✅
 **学习目标：** 掌握STL容器的使用
-- vector, list, deque
-- set, multiset, map, multimap
-- stack, queue, priority_queue
-- 容器的选择原则
-- 迭代器
+- vector, list, deque - 序列容器的特点和使用
+- set, multiset, map, multimap - 关联容器的应用
+- stack, queue, priority_queue - 容器适配器
+- 容器的选择原则和性能对比
+- 迭代器的使用和类型
+- **参考资料：** [STL容器 - cppreference.com](https://en.cppreference.com/w/cpp/container)
 
-### [第16天：STL算法](/plan/week3/day16/)
+### [第16天：STL算法](/plan/week3/day16/) ✅
 **学习目标：** 掌握STL算法的使用
 - 查找算法（find, find_if, binary_search）
 - 排序算法（sort, stable_sort, partial_sort）
 - 修改算法（transform, replace, remove）
 - 数值算法（accumulate, inner_product）
-- 自定义比较器
+- 自定义比较器和Lambda表达式
+- **参考资料：** [STL算法 - cppreference.com](https://en.cppreference.com/w/cpp/algorithm)
 
-### [第17天：智能指针](/plan/week3/day17/)
+### [第17天：智能指针](/plan/week3/day17/) ✅
 **学习目标：** 掌握现代C++的内存管理
-- unique_ptr的使用
-- shared_ptr的使用
-- weak_ptr的使用
-- make_unique和make_shared
-- 循环引用问题
+- unique_ptr的使用 - 独占所有权智能指针
+- shared_ptr的使用 - 共享所有权智能指针
+- weak_ptr的使用 - 弱引用智能指针
+- make_unique和make_shared - 推荐的创建方式
+- 循环引用问题和解决方案
+- **参考资料：** [智能指针 - cppreference.com](https://en.cppreference.com/w/cpp/memory)
 
-### [第18天：Lambda表达式](/plan/week3/day18/)
+### [第18天：Lambda表达式](/plan/week3/day18/) ✅
 **学习目标：** 掌握现代C++的Lambda表达式
-- Lambda表达式的语法
-- 捕获列表
+- Lambda表达式的语法和基本使用
+- 捕获列表 - 值捕获、引用捕获、混合捕获
 - 参数列表与返回类型
-- 泛型Lambda
+- 泛型Lambda（C++14）
 - Lambda与STL的结合使用
+- **参考资料：** [Lambda表达式 - cppreference.com](https://en.cppreference.com/w/cpp/language/lambda)
 
-### [第19天：移动语义](/plan/week3/day19/)
+### [第19天：移动语义](/plan/week3/day19/) ✅
 **学习目标：** 掌握C++11的移动语义
-- 左值与右值
+- 左值与右值的概念和区别
 - 移动构造函数与移动赋值运算符
-- std::move的使用
-- 完美转发
+- std::move的使用和原理
+- 完美转发（Perfect Forwarding）
 - 移动语义的性能优势
+- **参考资料：** [移动语义 - cppreference.com](https://en.cppreference.com/w/cpp/language/move_constructor)
 
-### [第20天：并发编程基础](/plan/week3/day20/)
+### [第20天：并发编程基础](/plan/week3/day20/) ✅
 **学习目标：** 掌握C++11的并发编程
-- std::thread的使用
+- std::thread的使用 - 线程创建和管理
 - 线程同步（mutex, condition_variable）
-- 原子操作
-- 线程安全
-- 异步编程（async, future）
+- 原子操作 - std::atomic的使用
+- 线程安全编程技巧
+- 异步编程（async, future, promise）
+- **参考资料：** [C++并发编程 - cppreference.com](https://en.cppreference.com/w/cpp/thread)
 
-### [第21天：文件操作与IO](/plan/week3/day21/)
+### [第21天：文件操作与IO](/plan/week3/day21/) ✅
 **学习目标：** 掌握C++的文件操作
 - 文件流（ifstream, ofstream, fstream）
-- 文本文件与二进制文件
-- 文件定位
-- 错误处理
-- 字符串流
+- 文本文件与二进制文件的处理
+- 文件定位和随机访问
+- 错误处理和异常安全
+- 字符串流（stringstream）的使用
+- **参考资料：** [C++ IO库 - cppreference.com](https://en.cppreference.com/w/cpp/io)
 
 ## 本周总结
 完成第三周的学习后，你应该能够：

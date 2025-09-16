@@ -31,6 +31,10 @@ permalink: /plan/week4/
 - 策略模式
 - RAII模式
 
+**学习资源：**
+- [Design Patterns Gang of Four](https://www.amazon.com/Design-Patterns-Elements-Reusable-Object-Oriented/dp/0201633612) - 设计模式经典教材
+- [Refactoring Guru - Design Patterns](https://refactoring.guru/design-patterns) - 设计模式详细教程
+
 ### [第23天：性能优化](/plan/week4/day23/)
 **学习目标：** 学习C++性能优化技巧
 - 编译器优化选项
@@ -38,6 +42,10 @@ permalink: /plan/week4/
 - 缓存友好的代码
 - 避免不必要的拷贝
 - 内存池技术
+
+**学习资源：**
+- [C++ Optimization Guide](https://www.agner.org/optimize/optimizing_cpp.pdf) - C++优化指南(Agner Fog)
+- [Intel C++ Optimization Guide](https://software.intel.com/content/www/us/en/develop/articles/intel-guide-for-developing-multithreaded-applications.html) - Intel C++优化指南
 
 ### [第24天：调试与测试](/plan/week4/day24/)
 **学习目标：** 掌握调试和测试技巧
@@ -47,6 +55,10 @@ permalink: /plan/week4/
 - 断言的使用
 - 日志系统
 
+**学习资源：**
+- [GDB User Manual](https://www.gnu.org/software/gdb/documentation/) - GDB官方文档
+- [Google Test Documentation](https://google.github.io/googletest/) - Google测试框架
+
 ### [第25天：C++17新特性](/plan/week4/day25/)
 **学习目标：** 了解C++17的新特性
 - 结构化绑定
@@ -54,6 +66,10 @@ permalink: /plan/week4/
 - std::optional
 - std::variant
 - 文件系统库
+
+**学习资源：**
+- [C++17 Reference](https://en.cppreference.com/w/cpp/17) - C++17官方参考文档
+- [C++17 in Detail](https://leanpub.com/cpp17indetail) - C++17详细指南
 
 ### [第26天：C++20新特性](/plan/week4/day26/)
 **学习目标：** 了解C++20的新特性
@@ -63,13 +79,21 @@ permalink: /plan/week4/
 - 范围（Ranges）
 - 三路比较运算符
 
+**学习资源：**
+- [C++20 Reference](https://en.cppreference.com/w/cpp/20) - C++20官方参考文档
+- [C++20 in Detail](https://leanpub.com/cpp20indetail) - C++20详细指南
+
 ### [第27天：项目实战 - 数据结构实现](/plan/week4/day27/)
 **学习目标：** 实现常用的数据结构
+- 动态数组实现
 - 链表实现
 - 栈和队列实现
 - 二叉搜索树实现
-- 哈希表实现
-- 图的基本操作
+- 哈希表基础
+
+**学习资源：**
+- [Data Structures and Algorithms in C++](https://www.amazon.com/Data-Structures-Algorithms-Michael-Goodrich/dp/1118771338) - C++数据结构教材
+- [Introduction to Algorithms](https://www.amazon.com/Introduction-Algorithms-3rd-MIT-Press/dp/0262033844) - 算法导论
 
 ### [第28天：综合项目 - 小型系统设计](/plan/week4/day28/)
 **学习目标：** 综合运用所学知识设计一个小型系统
@@ -78,6 +102,10 @@ permalink: /plan/week4/
 - 错误处理策略
 - 性能考虑
 - 代码组织
+
+**学习资源：**
+- [Clean Architecture](https://www.amazon.com/Clean-Architecture-Craftsmans-Software-Structure/dp/0134494164) - 整洁架构
+- [System Design Primer](https://github.com/donnemartin/system-design-primer) - 系统设计入门
 
 ## 本周总结
 完成第四周的学习后，你应该能够：
