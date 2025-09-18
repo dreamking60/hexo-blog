@@ -1,484 +1,1195 @@
+﻿---
+title: C++ 学习计划 - 第28天:综合项目 - 小型系统设计
+date: 2025-09-16 10:31:00
+categories: Cpp
+tags:
+    - C++ 
+    - Study Plan
+    - Week4
+    - Day28
+layout: page
+menu_id: plan
+permalink: /plan/week4/day28/
+---
+
 # 第28天：综合项目 - 小型系统设计
 
 ## 学习目标
-综合运用前面学到的所有知识，设计并实现一个完整的小型系统，展示系统架构设计、模块化编程、错误处理、性能优化等综合能力。
+通过设计和实现一个完整的小型系统，综合运用四周来学到的所有C++知识，包括面向对象设计、现代C++特性、设计模式和性能优化等。
 
-## 项目概述：分布式任务调度系统
+## 学习资源链接
 
-我们将实现一个分布式任务调度系统，包含以下核心功能：
-- 任务提交和管理
-- 任务调度和执行
-- 负载均衡
-- 故障恢复
-- 监控和日志
+### 📚 系统设计资源
+- [System Design Primer](https://github.com/donnemartin/system-design-primer) - 系统设计入门
+- [Clean Architecture](https://www.amazon.com/Clean-Architecture-Craftsmans-Software-Structure/dp/0134494164) - 整洁架构
+- [Design Patterns](https://www.amazon.com/Design-Patterns-Elements-Reusable-Object-Oriented/dp/0201633612) - 设计模式经典
+- [C++ Software Design](https://www.amazon.com/Software-Design-Principles-Patterns-High-Quality/dp/1098113160) - C++软件设计
+
+### 🎥 视频教程
+- [System Design Interview](https://www.youtube.com/results?search_query=system+design+interview) - 系统设计面试
+- [Clean Code](https://www.youtube.com/watch?v=7EmboKQH8lM) - 整洁代码
+- [SOLID Principles](https://www.youtube.com/watch?v=_jDNAf3CzeY) - SOLID设计原则
+
+### 📖 深入阅读
+- [Effective C++](https://www.amazon.com/Effective-Specific-Improve-Programs-Designs/dp/0321334876) - 高效C++编程
+- [Modern C++ Design](https://www.amazon.com/Modern-Design-Generic-Programming-Patterns/dp/0201704315) - 现代C++设计
+- [Large-Scale C++ Software Design](https://www.amazon.com/Large-Scale-Software-Design-John-Lakos/dp/0201633620) - 大规模C++软件设计
+
+### 🔧 开发工具
+- [CMake](https://cmake.org/) - 构建系统
+- [Git](https://git-scm.com/) - 版本控制
+- [Doxygen](https://www.doxygen.nl/) - 文档生成
+- [Clang-Format](https://clang.llvm.org/docs/ClangFormat.html) - 代码格式化
+
+## 项目：图书管理系统
+
+我们将实现一个完整的图书管理系统，包含以下功能：
+- 用户管理（读者、管理员）
+- 图书管理（添加、删除、查询、借阅）
+- 借阅记录管理
+- 数据持久化
+- 日志系统
 - 配置管理
 
-## 系统架构设计
+### 项目结构
 
-### 1. 整体架构
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Client API    │    │   Web Dashboard │    │   Monitoring    │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         └───────────────────────┼───────────────────────┘
-                                 │
-                    ┌─────────────────┐
-                    │  API Gateway    │
-                    └─────────────────┘
-                                 │
-                    ┌─────────────────┐
-                    │ Task Scheduler  │
-                    └─────────────────┘
-                                 │
-         ┌───────────────────────┼───────────────────────┐
-         │                       │                       │
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Worker Node   │    │   Worker Node   │    │   Worker Node   │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
+LibrarySystem/
+├── src/
+│   ├── core/
+│   │   ├── User.hpp
+│   │   ├── Book.hpp
+│   │   ├── BorrowRecord.hpp
+│   │   └── Library.hpp
+│   ├── storage/
+│   │   ├── Database.hpp
+│   │   └── FileStorage.hpp
+│   ├── utils/
+│   │   ├── Logger.hpp
+│   │   ├── Config.hpp
+│   │   └── DateTime.hpp
+│   ├── ui/
+│   │   └── ConsoleUI.hpp
+│   └── main.cpp
+├── tests/
+├── docs/
+├── config/
+│   └── library.conf
+├── data/
+└── CMakeLists.txt
 ```
 
-### 2. 核心组件设计
+### 1. 核心数据模型
 
-#### 任务定义系统
+首先定义系统的核心数据结构：
+
 ```cpp
-#include <string>
+// src/utils/DateTime.hpp
+#pragma once
 #include <chrono>
+#include <string>
+#include <iomanip>
+#include <sstream>
+
+class DateTime {
+private:
+    std::chrono::system_clock::time_point time_point_;
+    
+public:
+    DateTime() : time_point_(std::chrono::system_clock::now()) {}
+    
+    explicit DateTime(std::chrono::system_clock::time_point tp) : time_point_(tp) {}
+    
+    static DateTime now() {
+        return DateTime{};
+    }
+    
+    static DateTime from_string(const std::string& date_str) {
+        std::tm tm = {};
+        std::istringstream ss(date_str);
+        ss >> std::get_time(&tm, "%Y-%m-%d %H:%M:%S");
+        
+        auto time_t = std::mktime(&tm);
+        return DateTime{std::chrono::system_clock::from_time_t(time_t)};
+    }
+    
+    std::string to_string() const {
+        auto time_t = std::chrono::system_clock::to_time_t(time_point_);
+        std::stringstream ss;
+        ss << std::put_time(std::localtime(&time_t), "%Y-%m-%d %H:%M:%S");
+        return ss.str();
+    }
+    
+    DateTime add_days(int days) const {
+        auto duration = std::chrono::hours(24 * days);
+        return DateTime{time_point_ + duration};
+    }
+    
+    std::chrono::system_clock::duration operator-(const DateTime& other) const {
+        return time_point_ - other.time_point_;
+    }
+    
+    bool operator<(const DateTime& other) const {
+        return time_point_ < other.time_point_;
+    }
+    
+    bool operator>(const DateTime& other) const {
+        return time_point_ > other.time_point_;
+    }
+    
+    bool operator==(const DateTime& other) const {
+        return time_point_ == other.time_point_;
+    }
+    
+    auto get_time_point() const { return time_point_; }
+};
+```
+
+```cpp
+// src/core/User.hpp
+#pragma once
+#include <string>
 #include <memory>
-#include <functional>
-#include <unordered_map>
 #include <vector>
-#include <queue>
-#include <mutex>
-#include <condition_variable>
-#include <thread>
-#include <atomic>
 
-// 任务优先级
-enum class TaskPriority {
-    LOW = 0,
-    NORMAL = 1,
-    HIGH = 2,
-    CRITICAL = 3
+enum class UserType {
+    READER,
+    LIBRARIAN,
+    ADMIN
 };
 
-// 任务状态
-enum class TaskStatus {
-    PENDING,
-    RUNNING,
-    COMPLETED,
-    FAILED,
-    CANCELLED
-};
-
-// 任务类型
-enum class TaskType {
-    CPU_INTENSIVE,
-    IO_INTENSIVE,
-    NETWORK_INTENSIVE,
-    MEMORY_INTENSIVE
-};
-
-// 任务元数据
-struct TaskMetadata {
-    std::string task_id;
-    std::string task_name;
-    TaskType type;
-    TaskPriority priority;
-    std::chrono::system_clock::time_point submit_time;
-    std::chrono::system_clock::time_point start_time;
-    std::chrono::system_clock::time_point end_time;
-    std::chrono::milliseconds timeout;
-    int max_retries;
-    int current_retries;
-    std::string worker_id;
-    std::unordered_map<std::string, std::string> parameters;
-    
-    TaskMetadata() : current_retries(0), max_retries(3) {}
-};
-
-// 任务结果
-struct TaskResult {
-    std::string task_id;
-    TaskStatus status;
-    std::string result_data;
-    std::string error_message;
-    std::chrono::milliseconds execution_time;
-    std::unordered_map<std::string, std::string> metrics;
-};
-
-// 任务接口
-class ITask {
-public:
-    virtual ~ITask() = default;
-    virtual TaskResult execute(const TaskMetadata& metadata) = 0;
-    virtual std::string getTaskType() const = 0;
-    virtual bool canRetry() const = 0;
-};
-
-// 具体任务实现基类
-class Task : public ITask {
-protected:
-    TaskMetadata metadata_;
+class User {
+private:
+    std::string user_id_;
+    std::string name_;
+    std::string email_;
+    std::string phone_;
+    UserType type_;
+    bool active_;
     
 public:
-    Task(const TaskMetadata& metadata) : metadata_(metadata) {}
+    User(std::string user_id, std::string name, std::string email, 
+         std::string phone, UserType type = UserType::READER)
+        : user_id_(std::move(user_id))
+        , name_(std::move(name))
+        , email_(std::move(email))
+        , phone_(std::move(phone))
+        , type_(type)
+        , active_(true) {}
     
-    const TaskMetadata& getMetadata() const { return metadata_; }
-    void updateMetadata(const TaskMetadata& metadata) { metadata_ = metadata; }
+    // Getters
+    const std::string& user_id() const { return user_id_; }
+    const std::string& name() const { return name_; }
+    const std::string& email() const { return email_; }
+    const std::string& phone() const { return phone_; }
+    UserType type() const { return type_; }
+    bool is_active() const { return active_; }
     
-    bool canRetry() const override {
-        return metadata_.current_retries < metadata_.max_retries;
+    // Setters
+    void set_name(std::string name) { name_ = std::move(name); }
+    void set_email(std::string email) { email_ = std::move(email); }
+    void set_phone(std::string phone) { phone_ = std::move(phone); }
+    void set_type(UserType type) { type_ = type; }
+    void set_active(bool active) { active_ = active; }
+    
+    // 权限检查
+    bool can_borrow_books() const {
+        return active_ && (type_ == UserType::READER || type_ == UserType::LIBRARIAN);
+    }
+    
+    bool can_manage_books() const {
+        return active_ && (type_ == UserType::LIBRARIAN || type_ == UserType::ADMIN);
+    }
+    
+    bool can_manage_users() const {
+        return active_ && type_ == UserType::ADMIN;
+    }
+    
+    // 序列化支持
+    std::string to_string() const {
+        return user_id_ + "|" + name_ + "|" + email_ + "|" + phone_ + "|" + 
+               std::to_string(static_cast<int>(type_)) + "|" + 
+               (active_ ? "1" : "0");
+    }
+    
+    static std::unique_ptr<User> from_string(const std::string& str) {
+        std::vector<std::string> parts;
+        std::string current;
+        
+        for (char c : str) {
+            if (c == '|') {
+                parts.push_back(current);
+                current.clear();
+            } else {
+                current += c;
+            }
+        }
+        parts.push_back(current);
+        
+        if (parts.size() != 6) return nullptr;
+        
+        auto user = std::make_unique<User>(
+            parts[0], parts[1], parts[2], parts[3],
+            static_cast<UserType>(std::stoi(parts[4]))
+        );
+        user->set_active(parts[5] == "1");
+        
+        return user;
     }
 };
+```
 
-// CPU密集型任务示例
-class CPUIntensiveTask : public Task {
+```cpp
+// src/core/Book.hpp
+#pragma once
+#include <string>
+#include <memory>
+#include <vector>
+
+enum class BookStatus {
+    AVAILABLE,
+    BORROWED,
+    RESERVED,
+    DAMAGED,
+    LOST
+};
+
+class Book {
 private:
-    std::function<std::string(const std::unordered_map<std::string, std::string>&)> computation_;
+    std::string isbn_;
+    std::string title_;
+    std::string author_;
+    std::string publisher_;
+    int year_;
+    std::string category_;
+    BookStatus status_;
+    std::string current_borrower_id_;
     
 public:
-    CPUIntensiveTask(const TaskMetadata& metadata,
-                    std::function<std::string(const std::unordered_map<std::string, std::string>&)> comp)
-        : Task(metadata), computation_(comp) {}
+    Book(std::string isbn, std::string title, std::string author,
+         std::string publisher, int year, std::string category)
+        : isbn_(std::move(isbn))
+        , title_(std::move(title))
+        , author_(std::move(author))
+        , publisher_(std::move(publisher))
+        , year_(year)
+        , category_(std::move(category))
+        , status_(BookStatus::AVAILABLE) {}
     
-    TaskResult execute(const TaskMetadata& metadata) override {
-        auto start = std::chrono::high_resolution_clock::now();
+    // Getters
+    const std::string& isbn() const { return isbn_; }
+    const std::string& title() const { return title_; }
+    const std::string& author() const { return author_; }
+    const std::string& publisher() const { return publisher_; }
+    int year() const { return year_; }
+    const std::string& category() const { return category_; }
+    BookStatus status() const { return status_; }
+    const std::string& current_borrower_id() const { return current_borrower_id_; }
+    
+    // Setters
+    void set_title(std::string title) { title_ = std::move(title); }
+    void set_author(std::string author) { author_ = std::move(author); }
+    void set_publisher(std::string publisher) { publisher_ = std::move(publisher); }
+    void set_year(int year) { year_ = year; }
+    void set_category(std::string category) { category_ = std::move(category); }
+    void set_status(BookStatus status) { status_ = status; }
+    void set_current_borrower_id(std::string borrower_id) { 
+        current_borrower_id_ = std::move(borrower_id); 
+    }
+    
+    // 状态检查
+    bool is_available() const {
+        return status_ == BookStatus::AVAILABLE;
+    }
+    
+    bool is_borrowed() const {
+        return status_ == BookStatus::BORROWED;
+    }
+    
+    // 借阅操作
+    bool borrow(const std::string& user_id) {
+        if (is_available()) {
+            status_ = BookStatus::BORROWED;
+            current_borrower_id_ = user_id;
+            return true;
+        }
+        return false;
+    }
+    
+    bool return_book() {
+        if (is_borrowed()) {
+            status_ = BookStatus::AVAILABLE;
+            current_borrower_id_.clear();
+            return true;
+        }
+        return false;
+    }
+    
+    // 序列化支持
+    std::string to_string() const {
+        return isbn_ + "|" + title_ + "|" + author_ + "|" + publisher_ + "|" +
+               std::to_string(year_) + "|" + category_ + "|" +
+               std::to_string(static_cast<int>(status_)) + "|" + current_borrower_id_;
+    }
+    
+    static std::unique_ptr<Book> from_string(const std::string& str) {
+        std::vector<std::string> parts;
+        std::string current;
         
-        TaskResult result;
-        result.task_id = metadata.task_id;
+        for (char c : str) {
+            if (c == '|') {
+                parts.push_back(current);
+                current.clear();
+            } else {
+                current += c;
+            }
+        }
+        parts.push_back(current);
         
-        try {
-            result.result_data = computation_(metadata.parameters);
-            result.status = TaskStatus::COMPLETED;
-        } catch (const std::exception& e) {
-            result.status = TaskStatus::FAILED;
-            result.error_message = e.what();
+        if (parts.size() != 8) return nullptr;
+        
+        auto book = std::make_unique<Book>(
+            parts[0], parts[1], parts[2], parts[3],
+            std::stoi(parts[4]), parts[5]
+        );
+        
+        book->set_status(static_cast<BookStatus>(std::stoi(parts[6])));
+        if (!parts[7].empty()) {
+            book->set_current_borrower_id(parts[7]);
         }
         
-        auto end = std::chrono::high_resolution_clock::now();
-        result.execution_time = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+        return book;
+    }
+};
+```
+
+```cpp
+// src/core/BorrowRecord.hpp
+#pragma once
+#include "../utils/DateTime.hpp"
+#include <string>
+#include <memory>
+#include <optional>
+
+class BorrowRecord {
+private:
+    std::string record_id_;
+    std::string user_id_;
+    std::string isbn_;
+    DateTime borrow_date_;
+    DateTime due_date_;
+    std::optional<DateTime> return_date_;
+    double fine_amount_;
+    
+public:
+    BorrowRecord(std::string record_id, std::string user_id, std::string isbn,
+                 DateTime borrow_date, DateTime due_date)
+        : record_id_(std::move(record_id))
+        , user_id_(std::move(user_id))
+        , isbn_(std::move(isbn))
+        , borrow_date_(borrow_date)
+        , due_date_(due_date)
+        , fine_amount_(0.0) {}
+    
+    // Getters
+    const std::string& record_id() const { return record_id_; }
+    const std::string& user_id() const { return user_id_; }
+    const std::string& isbn() const { return isbn_; }
+    const DateTime& borrow_date() const { return borrow_date_; }
+    const DateTime& due_date() const { return due_date_; }
+    const std::optional<DateTime>& return_date() const { return return_date_; }
+    double fine_amount() const { return fine_amount_; }
+    
+    // 状态检查
+    bool is_returned() const {
+        return return_date_.has_value();
+    }
+    
+    bool is_overdue() const {
+        if (is_returned()) {
+            return *return_date_ > due_date_;
+        }
+        return DateTime::now() > due_date_;
+    }
+    
+    int days_overdue() const {
+        if (!is_overdue()) return 0;
+        
+        DateTime check_date = is_returned() ? *return_date_ : DateTime::now();
+        auto duration = check_date - due_date_;
+        return static_cast<int>(std::chrono::duration_cast<std::chrono::hours>(duration).count() / 24);
+    }
+    
+    // 归还操作
+    void return_book(DateTime return_time = DateTime::now()) {
+        return_date_ = return_time;
+        
+        // 计算罚金（每天1元）
+        if (is_overdue()) {
+            fine_amount_ = days_overdue() * 1.0;
+        }
+    }
+    
+    // 序列化支持
+    std::string to_string() const {
+        std::string result = record_id_ + "|" + user_id_ + "|" + isbn_ + "|" +
+                           borrow_date_.to_string() + "|" + due_date_.to_string() + "|";
+        
+        if (return_date_) {
+            result += return_date_->to_string();
+        }
+        result += "|" + std::to_string(fine_amount_);
         
         return result;
     }
     
-    std::string getTaskType() const override { return "CPU_INTENSIVE"; }
+    static std::unique_ptr<BorrowRecord> from_string(const std::string& str) {
+        std::vector<std::string> parts;
+        std::string current;
+        
+        for (char c : str) {
+            if (c == '|') {
+                parts.push_back(current);
+                current.clear();
+            } else {
+                current += c;
+            }
+        }
+        parts.push_back(current);
+        
+        if (parts.size() != 7) return nullptr;
+        
+        auto record = std::make_unique<BorrowRecord>(
+            parts[0], parts[1], parts[2],
+            DateTime::from_string(parts[3]),
+            DateTime::from_string(parts[4])
+        );
+        
+        if (!parts[5].empty()) {
+            record->return_date_ = DateTime::from_string(parts[5]);
+        }
+        
+        record->fine_amount_ = std::stod(parts[6]);
+        
+        return record;
+    }
 };
 ```
 
-#### 任务调度器
+### 2. 存储层设计
+
+实现数据持久化功能：
+
 ```cpp
-#include <queue>
-#include <mutex>
-#include <condition_variable>
-#include <thread>
-#include <atomic>
-#include <algorithm>
+// src/storage/Database.hpp
+#pragma once
+#include "../core/User.hpp"
+#include "../core/Book.hpp"
+#include "../core/BorrowRecord.hpp"
+#include <vector>
+#include <memory>
+#include <functional>
 
-// 任务比较器（用于优先队列）
-struct TaskComparator {
-    bool operator()(const std::shared_ptr<Task>& a, const std::shared_ptr<Task>& b) const {
-        const auto& meta_a = a->getMetadata();
-        const auto& meta_b = b->getMetadata();
-        
-        // 优先级高的先执行
-        if (meta_a.priority != meta_b.priority) {
-            return meta_a.priority < meta_b.priority;
-        }
-        
-        // 相同优先级，提交时间早的先执行
-        return meta_a.submit_time > meta_b.submit_time;
-    }
-};
-
-// 负载均衡策略接口
-class ILoadBalancer {
+class Database {
 public:
-    virtual ~ILoadBalancer() = default;
-    virtual std::string selectWorker(const std::vector<std::string>& available_workers,
-                                   const TaskMetadata& task) = 0;
+    virtual ~Database() = default;
+    
+    // 用户管理
+    virtual bool save_user(const User& user) = 0;
+    virtual std::unique_ptr<User> load_user(const std::string& user_id) = 0;
+    virtual std::vector<std::unique_ptr<User>> load_all_users() = 0;
+    virtual bool delete_user(const std::string& user_id) = 0;
+    
+    // 图书管理
+    virtual bool save_book(const Book& book) = 0;
+    virtual std::unique_ptr<Book> load_book(const std::string& isbn) = 0;
+    virtual std::vector<std::unique_ptr<Book>> load_all_books() = 0;
+    virtual bool delete_book(const std::string& isbn) = 0;
+    
+    // 借阅记录管理
+    virtual bool save_borrow_record(const BorrowRecord& record) = 0;
+    virtual std::unique_ptr<BorrowRecord> load_borrow_record(const std::string& record_id) = 0;
+    virtual std::vector<std::unique_ptr<BorrowRecord>> load_all_borrow_records() = 0;
+    virtual std::vector<std::unique_ptr<BorrowRecord>> load_user_borrow_records(const std::string& user_id) = 0;
+    virtual bool delete_borrow_record(const std::string& record_id) = 0;
+    
+    // 搜索功能
+    virtual std::vector<std::unique_ptr<Book>> search_books(
+        std::function<bool(const Book&)> predicate) = 0;
+    virtual std::vector<std::unique_ptr<User>> search_users(
+        std::function<bool(const User&)> predicate) = 0;
 };
+```
 
-// 轮询负载均衡
-class RoundRobinBalancer : public ILoadBalancer {
+```cpp
+// src/storage/FileStorage.hpp
+#pragma once
+#include "Database.hpp"
+#include <fstream>
+#include <filesystem>
+#include <unordered_map>
+
+class FileStorage : public Database {
 private:
-    std::atomic<size_t> current_index_{0};
+    std::filesystem::path data_dir_;
+    std::filesystem::path users_file_;
+    std::filesystem::path books_file_;
+    std::filesystem::path records_file_;
     
-public:
-    std::string selectWorker(const std::vector<std::string>& available_workers,
-                           const TaskMetadata& task) override {
-        if (available_workers.empty()) {
-            return "";
-        }
-        
-        size_t index = current_index_.fetch_add(1) % available_workers.size();
-        return available_workers[index];
-    }
-};
-
-// 任务调度器
-class TaskScheduler {
-private:
-    std::priority_queue<std::shared_ptr<Task>, 
-                       std::vector<std::shared_ptr<Task>>, 
-                       TaskComparator> task_queue_;
-    std::mutex queue_mutex_;
-    std::condition_variable queue_cv_;
+    // 缓存
+    mutable std::unordered_map<std::string, std::unique_ptr<User>> user_cache_;
+    mutable std::unordered_map<std::string, std::unique_ptr<Book>> book_cache_;
+    mutable std::unordered_map<std::string, std::unique_ptr<BorrowRecord>> record_cache_;
+    mutable bool cache_loaded_ = false;
     
-    std::unordered_map<std::string, TaskStatus> task_status_;
-    std::unordered_map<std::string, TaskResult> task_results_;
-    std::mutex status_mutex_;
-    
-    std::vector<std::string> worker_nodes_;
-    std::unordered_map<std::string, int> worker_loads_;
-    std::mutex worker_mutex_;
-    
-    std::unique_ptr<ILoadBalancer> load_balancer_;
-    
-    std::vector<std::thread> scheduler_threads_;
-    std::atomic<bool> running_{false};
-    
-    // 监控和统计
-    std::atomic<size_t> total_tasks_{0};
-    std::atomic<size_t> completed_tasks_{0};
-    std::atomic<size_t> failed_tasks_{0};
-    
-public:
-    TaskScheduler(std::unique_ptr<ILoadBalancer> balancer) 
-        : load_balancer_(std::move(balancer)) {}
-    
-    ~TaskScheduler() {
-        stop();
-    }
-    
-    void start(int num_threads = std::thread::hardware_concurrency()) {
-        running_ = true;
-        
-        for (int i = 0; i < num_threads; ++i) {
-            scheduler_threads_.emplace_back([this]() {
-                schedulerLoop();
-            });
+    void ensure_data_directory() {
+        if (!std::filesystem::exists(data_dir_)) {
+            std::filesystem::create_directories(data_dir_);
         }
     }
     
-    void stop() {
-        running_ = false;
-        queue_cv_.notify_all();
+    void load_cache() const {
+        if (cache_loaded_) return;
         
-        for (auto& thread : scheduler_threads_) {
-            if (thread.joinable()) {
-                thread.join();
+        // 加载用户
+        if (std::filesystem::exists(users_file_)) {
+            std::ifstream file(users_file_);
+            std::string line;
+            while (std::getline(file, line)) {
+                if (auto user = User::from_string(line)) {
+                    user_cache_[user->user_id()] = std::move(user);
+                }
             }
         }
-        scheduler_threads_.clear();
-    }
-    
-    std::string submitTask(std::shared_ptr<Task> task) {
-        std::lock_guard<std::mutex> lock(queue_mutex_);
         
-        const auto& metadata = task->getMetadata();
-        task_queue_.push(task);
-        
-        {
-            std::lock_guard<std::mutex> status_lock(status_mutex_);
-            task_status_[metadata.task_id] = TaskStatus::PENDING;
+        // 加载图书
+        if (std::filesystem::exists(books_file_)) {
+            std::ifstream file(books_file_);
+            std::string line;
+            while (std::getline(file, line)) {
+                if (auto book = Book::from_string(line)) {
+                    book_cache_[book->isbn()] = std::move(book);
+                }
+            }
         }
         
-        total_tasks_++;
-        queue_cv_.notify_one();
-        
-        return metadata.task_id;
-    }
-    
-    TaskStatus getTaskStatus(const std::string& task_id) const {
-        std::lock_guard<std::mutex> lock(status_mutex_);
-        auto it = task_status_.find(task_id);
-        return (it != task_status_.end()) ? it->second : TaskStatus::PENDING;
-    }
-    
-    std::optional<TaskResult> getTaskResult(const std::string& task_id) const {
-        std::lock_guard<std::mutex> lock(status_mutex_);
-        auto it = task_results_.find(task_id);
-        if (it != task_results_.end()) {
-            return it->second;
+        // 加载借阅记录
+        if (std::filesystem::exists(records_file_)) {
+            std::ifstream file(records_file_);
+            std::string line;
+            while (std::getline(file, line)) {
+                if (auto record = BorrowRecord::from_string(line)) {
+                    record_cache_[record->record_id()] = std::move(record);
+                }
+            }
         }
-        return std::nullopt;
+        
+        cache_loaded_ = true;
     }
     
-    void registerWorker(const std::string& worker_id) {
-        std::lock_guard<std::mutex> lock(worker_mutex_);
-        worker_nodes_.push_back(worker_id);
-        worker_loads_[worker_id] = 0;
-    }
-    
-    void unregisterWorker(const std::string& worker_id) {
-        std::lock_guard<std::mutex> lock(worker_mutex_);
-        auto it = std::find(worker_nodes_.begin(), worker_nodes_.end(), worker_id);
-        if (it != worker_nodes_.end()) {
-            worker_nodes_.erase(it);
-            worker_loads_.erase(worker_id);
+    void save_users_to_file() const {
+        std::ofstream file(users_file_);
+        for (const auto& [id, user] : user_cache_) {
+            file << user->to_string() << '\n';
         }
     }
     
-    // 获取系统统计信息
-    struct SystemStats {
-        size_t total_tasks;
-        size_t completed_tasks;
-        size_t failed_tasks;
-        size_t pending_tasks;
-        size_t active_workers;
-        double success_rate;
+    void save_books_to_file() const {
+        std::ofstream file(books_file_);
+        for (const auto& [isbn, book] : book_cache_) {
+            file << book->to_string() << '\n';
+        }
+    }
+    
+    void save_records_to_file() const {
+        std::ofstream file(records_file_);
+        for (const auto& [id, record] : record_cache_) {
+            file << record->to_string() << '\n';
+        }
+    }
+    
+public:
+    explicit FileStorage(const std::filesystem::path& data_dir = "data")
+        : data_dir_(data_dir)
+        , users_file_(data_dir / "users.txt")
+        , books_file_(data_dir / "books.txt")
+        , records_file_(data_dir / "records.txt") {
+        ensure_data_directory();
+    }
+    
+    // 用户管理实现
+    bool save_user(const User& user) override {
+        load_cache();
+        user_cache_[user.user_id()] = std::make_unique<User>(user);
+        save_users_to_file();
+        return true;
+    }
+    
+    std::unique_ptr<User> load_user(const std::string& user_id) override {
+        load_cache();
+        auto it = user_cache_.find(user_id);
+        if (it != user_cache_.end()) {
+            return std::make_unique<User>(*it->second);
+        }
+        return nullptr;
+    }
+    
+    std::vector<std::unique_ptr<User>> load_all_users() override {
+        load_cache();
+        std::vector<std::unique_ptr<User>> result;
+        for (const auto& [id, user] : user_cache_) {
+            result.push_back(std::make_unique<User>(*user));
+        }
+        return result;
+    }
+    
+    bool delete_user(const std::string& user_id) override {
+        load_cache();
+        if (user_cache_.erase(user_id) > 0) {
+            save_users_to_file();
+            return true;
+        }
+        return false;
+    }
+    
+    // 图书管理实现
+    bool save_book(const Book& book) override {
+        load_cache();
+        book_cache_[book.isbn()] = std::make_unique<Book>(book);
+        save_books_to_file();
+        return true;
+    }
+    
+    std::unique_ptr<Book> load_book(const std::string& isbn) override {
+        load_cache();
+        auto it = book_cache_.find(isbn);
+        if (it != book_cache_.end()) {
+            return std::make_unique<Book>(*it->second);
+        }
+        return nullptr;
+    }
+    
+    std::vector<std::unique_ptr<Book>> load_all_books() override {
+        load_cache();
+        std::vector<std::unique_ptr<Book>> result;
+        for (const auto& [isbn, book] : book_cache_) {
+            result.push_back(std::make_unique<Book>(*book));
+        }
+        return result;
+    }
+    
+    bool delete_book(const std::string& isbn) override {
+        load_cache();
+        if (book_cache_.erase(isbn) > 0) {
+            save_books_to_file();
+            return true;
+        }
+        return false;
+    }
+    
+    // 借阅记录管理实现
+    bool save_borrow_record(const BorrowRecord& record) override {
+        load_cache();
+        record_cache_[record.record_id()] = std::make_unique<BorrowRecord>(record);
+        save_records_to_file();
+        return true;
+    }
+    
+    std::unique_ptr<BorrowRecord> load_borrow_record(const std::string& record_id) override {
+        load_cache();
+        auto it = record_cache_.find(record_id);
+        if (it != record_cache_.end()) {
+            return std::make_unique<BorrowRecord>(*it->second);
+        }
+        return nullptr;
+    }
+    
+    std::vector<std::unique_ptr<BorrowRecord>> load_all_borrow_records() override {
+        load_cache();
+        std::vector<std::unique_ptr<BorrowRecord>> result;
+        for (const auto& [id, record] : record_cache_) {
+            result.push_back(std::make_unique<BorrowRecord>(*record));
+        }
+        return result;
+    }
+    
+    std::vector<std::unique_ptr<BorrowRecord>> load_user_borrow_records(const std::string& user_id) override {
+        load_cache();
+        std::vector<std::unique_ptr<BorrowRecord>> result;
+        for (const auto& [id, record] : record_cache_) {
+            if (record->user_id() == user_id) {
+                result.push_back(std::make_unique<BorrowRecord>(*record));
+            }
+        }
+        return result;
+    }
+    
+    bool delete_borrow_record(const std::string& record_id) override {
+        load_cache();
+        if (record_cache_.erase(record_id) > 0) {
+            save_records_to_file();
+            return true;
+        }
+        return false;
+    }
+    
+    // 搜索功能实现
+    std::vector<std::unique_ptr<Book>> search_books(
+        std::function<bool(const Book&)> predicate) override {
+        load_cache();
+        std::vector<std::unique_ptr<Book>> result;
+        for (const auto& [isbn, book] : book_cache_) {
+            if (predicate(*book)) {
+                result.push_back(std::make_unique<Book>(*book));
+            }
+        }
+        return result;
+    }
+    
+    std::vector<std::unique_ptr<User>> search_users(
+        std::function<bool(const User&)> predicate) override {
+        load_cache();
+        std::vector<std::unique_ptr<User>> result;
+        for (const auto& [id, user] : user_cache_) {
+            if (predicate(*user)) {
+                result.push_back(std::make_unique<User>(*user));
+            }
+        }
+        return result;
+    }
+};
+```
+
+### 3. 业务逻辑层
+
+实现核心业务逻辑：
+
+```cpp
+// src/core/Library.hpp
+#pragma once
+#include "../storage/Database.hpp"
+#include "../utils/Logger.hpp"
+#include "../utils/Config.hpp"
+#include <memory>
+#include <string>
+#include <random>
+#include <sstream>
+
+class Library {
+private:
+    std::unique_ptr<Database> database_;
+    std::unique_ptr<Logger> logger_;
+    std::unique_ptr<Config> config_;
+    
+    std::string generate_record_id() {
+        static std::random_device rd;
+        static std::mt19937 gen(rd());
+        static std::uniform_int_distribution<> dis(100000, 999999);
+        
+        std::stringstream ss;
+        ss << "REC" << dis(gen);
+        return ss.str();
+    }
+    
+public:
+    Library(std::unique_ptr<Database> database, 
+            std::unique_ptr<Logger> logger,
+            std::unique_ptr<Config> config)
+        : database_(std::move(database))
+        , logger_(std::move(logger))
+        , config_(std::move(config)) {
+        logger_->info("Library system initialized");
+    }
+    
+    // 用户管理
+    bool register_user(const std::string& user_id, const std::string& name,
+                      const std::string& email, const std::string& phone,
+                      UserType type = UserType::READER) {
+        if (database_->load_user(user_id)) {
+            logger_->warning("User already exists:", user_id);
+            return false;
+        }
+        
+        User user(user_id, name, email, phone, type);
+        bool success = database_->save_user(user);
+        
+        if (success) {
+            logger_->info("User registered:", user_id, name);
+        } else {
+            logger_->error("Failed to register user:", user_id);
+        }
+        
+        return success;
+    }
+    
+    std::unique_ptr<User> get_user(const std::string& user_id) {
+        return database_->load_user(user_id);
+    }
+    
+    std::vector<std::unique_ptr<User>> get_all_users() {
+        return database_->load_all_users();
+    }
+    
+    bool update_user(const User& user) {
+        logger_->info("Updating user:", user.user_id());
+        return database_->save_user(user);
+    }
+    
+    bool delete_user(const std::string& user_id) {
+        // 检查是否有未归还的书籍
+        auto records = database_->load_user_borrow_records(user_id);
+        for (const auto& record : records) {
+            if (!record->is_returned()) {
+                logger_->warning("Cannot delete user with unreturned books:", user_id);
+                return false;
+            }
+        }
+        
+        bool success = database_->delete_user(user_id);
+        if (success) {
+            logger_->info("User deleted:", user_id);
+        }
+        return success;
+    }
+    
+    // 图书管理
+    bool add_book(const std::string& isbn, const std::string& title,
+                  const std::string& author, const std::string& publisher,
+                  int year, const std::string& category) {
+        if (database_->load_book(isbn)) {
+            logger_->warning("Book already exists:", isbn);
+            return false;
+        }
+        
+        Book book(isbn, title, author, publisher, year, category);
+        bool success = database_->save_book(book);
+        
+        if (success) {
+            logger_->info("Book added:", isbn, title);
+        } else {
+            logger_->error("Failed to add book:", isbn);
+        }
+        
+        return success;
+    }
+    
+    std::unique_ptr<Book> get_book(const std::string& isbn) {
+        return database_->load_book(isbn);
+    }
+    
+    std::vector<std::unique_ptr<Book>> get_all_books() {
+        return database_->load_all_books();
+    }
+    
+    std::vector<std::unique_ptr<Book>> search_books_by_title(const std::string& title) {
+        return database_->search_books([&title](const Book& book) {
+            return book.title().find(title) != std::string::npos;
+        });
+    }
+    
+    std::vector<std::unique_ptr<Book>> search_books_by_author(const std::string& author) {
+        return database_->search_books([&author](const Book& book) {
+            return book.author().find(author) != std::string::npos;
+        });
+    }
+    
+    std::vector<std::unique_ptr<Book>> search_books_by_category(const std::string& category) {
+        return database_->search_books([&category](const Book& book) {
+            return book.category() == category;
+        });
+    }
+    
+    bool update_book(const Book& book) {
+        logger_->info("Updating book:", book.isbn());
+        return database_->save_book(book);
+    }
+    
+    bool delete_book(const std::string& isbn) {
+        auto book = database_->load_book(isbn);
+        if (!book) {
+            return false;
+        }
+        
+        if (book->is_borrowed()) {
+            logger_->warning("Cannot delete borrowed book:", isbn);
+            return false;
+        }
+        
+        bool success = database_->delete_book(isbn);
+        if (success) {
+            logger_->info("Book deleted:", isbn);
+        }
+        return success;
+    }
+    
+    // 借阅管理
+    bool borrow_book(const std::string& user_id, const std::string& isbn) {
+        auto user = database_->load_user(user_id);
+        if (!user || !user->can_borrow_books()) {
+            logger_->warning("User cannot borrow books:", user_id);
+            return false;
+        }
+        
+        auto book = database_->load_book(isbn);
+        if (!book || !book->is_available()) {
+            logger_->warning("Book not available for borrowing:", isbn);
+            return false;
+        }
+        
+        // 检查用户是否已达到借阅限制
+        auto user_records = database_->load_user_borrow_records(user_id);
+        int active_borrows = 0;
+        for (const auto& record : user_records) {
+            if (!record->is_returned()) {
+                active_borrows++;
+            }
+        }
+        
+        int max_borrows = config_->get_int("max_books_per_user", 5);
+        if (active_borrows >= max_borrows) {
+            logger_->warning("User has reached borrowing limit:", user_id);
+            return false;
+        }
+        
+        // 创建借阅记录
+        std::string record_id = generate_record_id();
+        DateTime borrow_date = DateTime::now();
+        int borrow_days = config_->get_int("default_borrow_days", 14);
+        DateTime due_date = borrow_date.add_days(borrow_days);
+        
+        BorrowRecord record(record_id, user_id, isbn, borrow_date, due_date);
+        
+        // 更新图书状态
+        book->borrow(user_id);
+        
+        // 保存更改
+        bool record_saved = database_->save_borrow_record(record);
+        bool book_updated = database_->save_book(*book);
+        
+        if (record_saved && book_updated) {
+            logger_->info("Book borrowed:", user_id, isbn, "due:", due_date.to_string());
+            return true;
+        } else {
+            logger_->error("Failed to complete borrowing:", user_id, isbn);
+            return false;
+        }
+    }
+    
+    bool return_book(const std::string& user_id, const std::string& isbn) {
+        // 查找活跃的借阅记录
+        auto user_records = database_->load_user_borrow_records(user_id);
+        BorrowRecord* active_record = nullptr;
+        
+        for (const auto& record : user_records) {
+            if (record->isbn() == isbn && !record->is_returned()) {
+                active_record = record.get();
+                break;
+            }
+        }
+        
+        if (!active_record) {
+            logger_->warning("No active borrow record found:", user_id, isbn);
+            return false;
+        }
+        
+        auto book = database_->load_book(isbn);
+        if (!book || !book->is_borrowed()) {
+            logger_->warning("Book is not currently borrowed:", isbn);
+            return false;
+        }
+        
+        // 处理归还
+        active_record->return_book();
+        book->return_book();
+        
+        // 保存更改
+        bool record_updated = database_->save_borrow_record(*active_record);
+        bool book_updated = database_->save_book(*book);
+        
+        if (record_updated && book_updated) {
+            if (active_record->is_overdue()) {
+                logger_->info("Book returned (overdue):", user_id, isbn, 
+                             "fine:", active_record->fine_amount());
+            } else {
+                logger_->info("Book returned:", user_id, isbn);
+            }
+            return true;
+        } else {
+            logger_->error("Failed to complete return:", user_id, isbn);
+            return false;
+        }
+    }
+    
+    std::vector<std::unique_ptr<BorrowRecord>> get_user_borrow_history(const std::string& user_id) {
+        return database_->load_user_borrow_records(user_id);
+    }
+    
+    std::vector<std::unique_ptr<BorrowRecord>> get_overdue_books() {
+        auto all_records = database_->load_all_borrow_records();
+        std::vector<std::unique_ptr<BorrowRecord>> overdue;
+        
+        for (auto& record : all_records) {
+            if (!record->is_returned() && record->is_overdue()) {
+                overdue.push_back(std::move(record));
+            }
+        }
+        
+        return overdue;
+    }
+    
+    // 统计信息
+    struct LibraryStats {
+        int total_books = 0;
+        int available_books = 0;
+        int borrowed_books = 0;
+        int total_users = 0;
+        int active_users = 0;
+        int overdue_books = 0;
+        double total_fines = 0.0;
     };
     
-    SystemStats getSystemStats() const {
-        SystemStats stats;
-        stats.total_tasks = total_tasks_.load();
-        stats.completed_tasks = completed_tasks_.load();
-        stats.failed_tasks = failed_tasks_.load();
+    LibraryStats get_statistics() {
+        LibraryStats stats;
         
-        {
-            std::lock_guard<std::mutex> lock(queue_mutex_);
-            stats.pending_tasks = task_queue_.size();
+        auto books = database_->load_all_books();
+        stats.total_books = static_cast<int>(books.size());
+        for (const auto& book : books) {
+            if (book->is_available()) {
+                stats.available_books++;
+            } else if (book->is_borrowed()) {
+                stats.borrowed_books++;
+            }
         }
         
-        {
-            std::lock_guard<std::mutex> lock(worker_mutex_);
-            stats.active_workers = worker_nodes_.size();
+        auto users = database_->load_all_users();
+        stats.total_users = static_cast<int>(users.size());
+        for (const auto& user : users) {
+            if (user->is_active()) {
+                stats.active_users++;
+            }
         }
         
-        stats.success_rate = stats.total_tasks > 0 ? 
-            static_cast<double>(stats.completed_tasks) / stats.total_tasks : 0.0;
+        auto records = database_->load_all_borrow_records();
+        for (const auto& record : records) {
+            if (!record->is_returned() && record->is_overdue()) {
+                stats.overdue_books++;
+            }
+            stats.total_fines += record->fine_amount();
+        }
         
         return stats;
     }
-    
+};
+```
+
+### 4. 工具类实现
+
+```cpp
+// src/utils/Logger.hpp
+#pragma once
+#include "DateTime.hpp"
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <mutex>
+
+enum class LogLevel {
+    DEBUG = 0,
+    INFO = 1,
+    WARNING = 2,
+    ERROR = 3
+};
+
+class Logger {
 private:
-    void schedulerLoop() {
-        while (running_) {
-            std::shared_ptr<Task> task;
-            
-            {
-                std::unique_lock<std::mutex> lock(queue_mutex_);
-                queue_cv_.wait(lock, [this]() {
-                    return !task_queue_.empty() || !running_;
-                });
-                
-                if (!running_) break;
-                
-                if (!task_queue_.empty()) {
-                    task = task_queue_.top();
-                    task_queue_.pop();
-                }
-            }
-            
-            if (task) {
-                executeTask(task);
-            }
+    std::ofstream file_;
+    LogLevel min_level_;
+    std::mutex mutex_;
+    
+    std::string level_to_string(LogLevel level) {
+        switch (level) {
+            case LogLevel::DEBUG: return "DEBUG";
+            case LogLevel::INFO: return "INFO";
+            case LogLevel::WARNING: return "WARNING";
+            case LogLevel::ERROR: return "ERROR";
+            default: return "UNKNOWN";
         }
     }
     
-    void executeTask(std::shared_ptr<Task> task) {
-        const auto& metadata = task->getMetadata();
+public:
+    Logger(const std::string& filename, LogLevel min_level = LogLevel::INFO)
+        : file_(filename, std::ios::app), min_level_(min_level) {}
+    
+    template<typename... Args>
+    void log(LogLevel level, Args&&... args) {
+        if (level < min_level_) return;
         
-        // 选择工作节点
-        std::string selected_worker;
-        {
-            std::lock_guard<std::mutex> lock(worker_mutex_);
-            selected_worker = load_balancer_->selectWorker(worker_nodes_, metadata);
-        }
+        std::lock_guard<std::mutex> lock(mutex_);
         
-        if (selected_worker.empty()) {
-            // 没有可用的工作节点，重新放回队列
-            std::lock_guard<std::mutex> lock(queue_mutex_);
-            task_queue_.push(task);
-            return;
-        }
+        std::stringstream ss;
+        ss << "[" << DateTime::now().to_string() << "] "
+           << "[" << level_to_string(level) << "] ";
         
-        // 更新任务状态
-        {
-            std::lock_guard<std::mutex> lock(status_mutex_);
-            task_status_[metadata.task_id] = TaskStatus::RUNNING;
-        }
+        ((ss << args << " "), ...);
         
-        // 执行任务（这里简化为本地执行）
-        TaskResult result = task->execute(metadata);
-        
-        // 更新结果和统计
-        {
-            std::lock_guard<std::mutex> lock(status_mutex_);
-            task_status_[metadata.task_id] = result.status;
-            task_results_[metadata.task_id] = result;
-        }
-        
-        if (result.status == TaskStatus::COMPLETED) {
-            completed_tasks_++;
-        } else if (result.status == TaskStatus::FAILED) {
-            failed_tasks_++;
-            
-            // 重试逻辑
-            if (task->canRetry()) {
-                auto retry_metadata = metadata;
-                retry_metadata.current_retries++;
-                task->updateMetadata(retry_metadata);
-                
-                std::lock_guard<std::mutex> lock(queue_mutex_);
-                task_queue_.push(task);
-                queue_cv_.notify_one();
-            }
-        }
+        std::string message = ss.str();
+        file_ << message << std::endl;
+        std::cout << message << std::endl;
+    }
+    
+    template<typename... Args>
+    void debug(Args&&... args) {
+        log(LogLevel::DEBUG, std::forward<Args>(args)...);
+    }
+    
+    template<typename... Args>
+    void info(Args&&... args) {
+        log(LogLevel::INFO, std::forward<Args>(args)...);
+    }
+    
+    template<typename... Args>
+    void warning(Args&&... args) {
+        log(LogLevel::WARNING, std::forward<Args>(args)...);
+    }
+    
+    template<typename... Args>
+    void error(Args&&... args) {
+        log(LogLevel::ERROR, std::forward<Args>(args)...);
     }
 };
 ```
 
-#### 配置管理系统
 ```cpp
+// src/utils/Config.hpp
+#pragma once
+#include <unordered_map>
+#include <string>
 #include <fstream>
 #include <sstream>
-#include <mutex>
-#include <shared_mutex>
 
-// 配置管理器（单例模式）
-class ConfigurationManager {
+class Config {
 private:
-    static std::unique_ptr<ConfigurationManager> instance_;
-    static std::once_flag init_flag_;
-    
     std::unordered_map<std::string, std::string> config_map_;
-    mutable std::shared_mutex config_mutex_;
-    std::string config_file_;
-    
-    ConfigurationManager() = default;
     
 public:
-    static ConfigurationManager& getInstance() {
-        std::call_once(init_flag_, []() {
-            instance_ = std::unique_ptr<ConfigurationManager>(new ConfigurationManager());
-        });
-        return *instance_;
+    explicit Config(const std::string& config_file = "config/library.conf") {
+        load_from_file(config_file);
     }
     
-    void loadFromFile(const std::string& filename) {
-        std::unique_lock<std::shared_mutex> lock(config_mutex_);
-        config_file_ = filename;
-        
+    void load_from_file(const std::string& filename) {
         std::ifstream file(filename);
-        if (!file.is_open()) {
-            throw std::runtime_error("Cannot open config file: " + filename);
-        }
-        
-        config_map_.clear();
         std::string line;
         
         while (std::getline(file, line)) {
             // 跳过注释和空行
             if (line.empty() || line[0] == '#') continue;
             
-            size_t pos = line.find('=');
+            auto pos = line.find('=');
             if (pos != std::string::npos) {
                 std::string key = line.substr(0, pos);
                 std::string value = line.substr(pos + 1);
                 
-                // 去除前后空格
+                // 去除空格
                 key.erase(0, key.find_first_not_of(" \t"));
                 key.erase(key.find_last_not_of(" \t") + 1);
                 value.erase(0, value.find_first_not_of(" \t"));
@@ -489,572 +1200,98 @@ public:
         }
     }
     
-    void saveToFile() const {
-        std::shared_lock<std::shared_mutex> lock(config_mutex_);
-        
-        std::ofstream file(config_file_);
-        if (!file.is_open()) {
-            throw std::runtime_error("Cannot write to config file: " + config_file_);
-        }
-        
-        for (const auto& [key, value] : config_map_) {
-            file << key << " = " << value << std::endl;
-        }
-    }
-    
-    template<typename T>
-    T get(const std::string& key, const T& default_value = T{}) const {
-        std::shared_lock<std::shared_mutex> lock(config_mutex_);
-        
+    std::string get_string(const std::string& key, const std::string& default_value = "") {
         auto it = config_map_.find(key);
-        if (it == config_map_.end()) {
-            return default_value;
+        return it != config_map_.end() ? it->second : default_value;
+    }
+    
+    int get_int(const std::string& key, int default_value = 0) {
+        auto it = config_map_.find(key);
+        if (it != config_map_.end()) {
+            try {
+                return std::stoi(it->second);
+            } catch (...) {
+                return default_value;
+            }
         }
-        
-        return convertFromString<T>(it->second);
+        return default_value;
     }
     
-    template<typename T>
-    void set(const std::string& key, const T& value) {
-        std::unique_lock<std::shared_mutex> lock(config_mutex_);
-        config_map_[key] = convertToString(value);
-    }
-    
-    bool contains(const std::string& key) const {
-        std::shared_lock<std::shared_mutex> lock(config_mutex_);
-        return config_map_.find(key) != config_map_.end();
-    }
-    
-    std::vector<std::string> getKeys() const {
-        std::shared_lock<std::shared_mutex> lock(config_mutex_);
-        std::vector<std::string> keys;
-        keys.reserve(config_map_.size());
-        
-        for (const auto& [key, value] : config_map_) {
-            keys.push_back(key);
+    double get_double(const std::string& key, double default_value = 0.0) {
+        auto it = config_map_.find(key);
+        if (it != config_map_.end()) {
+            try {
+                return std::stod(it->second);
+            } catch (...) {
+                return default_value;
+            }
         }
-        
-        return keys;
+        return default_value;
     }
     
-private:
-    template<typename T>
-    T convertFromString(const std::string& str) const {
-        if constexpr (std::is_same_v<T, std::string>) {
-            return str;
-        } else if constexpr (std::is_same_v<T, int>) {
-            return std::stoi(str);
-        } else if constexpr (std::is_same_v<T, double>) {
-            return std::stod(str);
-        } else if constexpr (std::is_same_v<T, bool>) {
-            return str == "true" || str == "1";
-        } else {
-            static_assert(std::is_same_v<T, void>, "Unsupported type");
+    bool get_bool(const std::string& key, bool default_value = false) {
+        auto it = config_map_.find(key);
+        if (it != config_map_.end()) {
+            std::string value = it->second;
+            std::transform(value.begin(), value.end(), value.begin(), ::tolower);
+            return value == "true" || value == "1" || value == "yes";
         }
+        return default_value;
     }
     
-    template<typename T>
-    std::string convertToString(const T& value) const {
-        if constexpr (std::is_same_v<T, std::string>) {
-            return value;
-        } else if constexpr (std::is_arithmetic_v<T>) {
-            return std::to_string(value);
-        } else if constexpr (std::is_same_v<T, bool>) {
-            return value ? "true" : "false";
-        } else {
-            static_assert(std::is_same_v<T, void>, "Unsupported type");
-        }
+    void set(const std::string& key, const std::string& value) {
+        config_map_[key] = value;
     }
 };
-
-// 静态成员定义
-std::unique_ptr<ConfigurationManager> ConfigurationManager::instance_ = nullptr;
-std::once_flag ConfigurationManager::init_flag_;
 ```
 
-#### 日志系统
-```cpp
-#include <fstream>
-#include <sstream>
-#include <iomanip>
-#include <chrono>
+## 实践练习
 
-enum class LogLevel {
-    DEBUG = 0,
-    INFO = 1,
-    WARNING = 2,
-    ERROR = 3,
-    CRITICAL = 4
-};
+### 练习1：扩展功能
+为系统添加更多功能：
+- 图书预约系统
+- 用户积分系统
+- 图书推荐算法
+- 多语言支持
 
-// 日志格式化器接口
-class ILogFormatter {
-public:
-    virtual ~ILogFormatter() = default;
-    virtual std::string format(LogLevel level, const std::string& message, 
-                              const std::chrono::system_clock::time_point& timestamp) = 0;
-};
+### 练习2：性能优化
+优化系统性能：
+- 实现数据库索引
+- 添加缓存机制
+- 并发访问支持
+- 内存使用优化
 
-// 默认日志格式化器
-class DefaultLogFormatter : public ILogFormatter {
-public:
-    std::string format(LogLevel level, const std::string& message,
-                      const std::chrono::system_clock::time_point& timestamp) override {
-        std::stringstream ss;
-        
-        // 时间戳
-        auto time_t = std::chrono::system_clock::to_time_t(timestamp);
-        auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-            timestamp.time_since_epoch()) % 1000;
-        
-        ss << "[" << std::put_time(std::localtime(&time_t), "%Y-%m-%d %H:%M:%S");
-        ss << "." << std::setfill('0') << std::setw(3) << ms.count() << "] ";
-        
-        // 日志级别
-        ss << "[" << levelToString(level) << "] ";
-        
-        // 线程ID
-        ss << "[Thread-" << std::this_thread::get_id() << "] ";
-        
-        // 消息
-        ss << message;
-        
-        return ss.str();
-    }
-    
-private:
-    std::string levelToString(LogLevel level) const {
-        switch (level) {
-            case LogLevel::DEBUG: return "DEBUG";
-            case LogLevel::INFO: return "INFO";
-            case LogLevel::WARNING: return "WARN";
-            case LogLevel::ERROR: return "ERROR";
-            case LogLevel::CRITICAL: return "CRIT";
-            default: return "UNKNOWN";
-        }
-    }
-};
+### 练习3：用户界面
+实现更好的用户界面：
+- Web界面
+- GUI应用
+- REST API
+- 移动应用支持
 
-// 日志输出器接口
-class ILogAppender {
-public:
-    virtual ~ILogAppender() = default;
-    virtual void append(const std::string& formatted_message) = 0;
-};
+### 练习4：系统扩展
+扩展系统架构：
+- 微服务架构
+- 分布式部署
+- 数据备份和恢复
+- 监控和日志分析
 
-// 文件日志输出器
-class FileLogAppender : public ILogAppender {
-private:
-    std::ofstream file_;
-    std::mutex file_mutex_;
-    
-public:
-    FileLogAppender(const std::string& filename) {
-        file_.open(filename, std::ios::app);
-        if (!file_.is_open()) {
-            throw std::runtime_error("Cannot open log file: " + filename);
-        }
-    }
-    
-    void append(const std::string& formatted_message) override {
-        std::lock_guard<std::mutex> lock(file_mutex_);
-        file_ << formatted_message << std::endl;
-        file_.flush();
-    }
-};
+## 今日总结
+通过完成这个综合项目，你应该掌握：
+1. 系统架构设计和模块化编程
+2. 面向对象设计原则的实际应用
+3. 现代C++特性在实际项目中的使用
+4. 错误处理和日志系统的设计
+5. 数据持久化和文件操作
+6. 项目组织和代码管理
 
-// 控制台日志输出器
-class ConsoleLogAppender : public ILogAppender {
-private:
-    std::mutex console_mutex_;
-    
-public:
-    void append(const std::string& formatted_message) override {
-        std::lock_guard<std::mutex> lock(console_mutex_);
-        std::cout << formatted_message << std::endl;
-    }
-};
+## 课程总结
+经过28天的系统学习，你已经：
+1. 掌握了C++语言的核心特性和现代语法
+2. 理解了面向对象编程的设计思想
+3. 学会了STL和现代C++库的使用
+4. 掌握了设计模式和软件架构
+5. 具备了独立设计和实现C++项目的能力
 
-// 主日志器
-class Logger {
-private:
-    LogLevel min_level_;
-    std::unique_ptr<ILogFormatter> formatter_;
-    std::vector<std::unique_ptr<ILogAppender>> appenders_;
-    
-public:
-    Logger(LogLevel min_level = LogLevel::INFO) 
-        : min_level_(min_level), formatter_(std::make_unique<DefaultLogFormatter>()) {}
-    
-    void setFormatter(std::unique_ptr<ILogFormatter> formatter) {
-        formatter_ = std::move(formatter);
-    }
-    
-    void addAppender(std::unique_ptr<ILogAppender> appender) {
-        appenders_.push_back(std::move(appender));
-    }
-    
-    void setMinLevel(LogLevel level) {
-        min_level_ = level;
-    }
-    
-    template<typename... Args>
-    void log(LogLevel level, const std::string& format, Args&&... args) {
-        if (level < min_level_) return;
-        
-        std::string message = formatMessage(format, std::forward<Args>(args)...);
-        auto timestamp = std::chrono::system_clock::now();
-        
-        std::string formatted = formatter_->format(level, message, timestamp);
-        
-        for (auto& appender : appenders_) {
-            appender->append(formatted);
-        }
-    }
-    
-    template<typename... Args>
-    void debug(const std::string& format, Args&&... args) {
-        log(LogLevel::DEBUG, format, std::forward<Args>(args)...);
-    }
-    
-    template<typename... Args>
-    void info(const std::string& format, Args&&... args) {
-        log(LogLevel::INFO, format, std::forward<Args>(args)...);
-    }
-    
-    template<typename... Args>
-    void warning(const std::string& format, Args&&... args) {
-        log(LogLevel::WARNING, format, std::forward<Args>(args)...);
-    }
-    
-    template<typename... Args>
-    void error(const std::string& format, Args&&... args) {
-        log(LogLevel::ERROR, format, std::forward<Args>(args)...);
-    }
-    
-    template<typename... Args>
-    void critical(const std::string& format, Args&&... args) {
-        log(LogLevel::CRITICAL, format, std::forward<Args>(args)...);
-    }
-    
-private:
-    template<typename... Args>
-    std::string formatMessage(const std::string& format, Args&&... args) {
-        if constexpr (sizeof...(args) == 0) {
-            return format;
-        } else {
-            std::ostringstream oss;
-            formatImpl(oss, format, std::forward<Args>(args)...);
-            return oss.str();
-        }
-    }
-    
-    void formatImpl(std::ostringstream& oss, const std::string& format) {
-        oss << format;
-    }
-    
-    template<typename T, typename... Args>
-    void formatImpl(std::ostringstream& oss, const std::string& format, T&& value, Args&&... args) {
-        size_t pos = format.find("{}");
-        if (pos != std::string::npos) {
-            oss << format.substr(0, pos) << value;
-            formatImpl(oss, format.substr(pos + 2), std::forward<Args>(args)...);
-        } else {
-            oss << format;
-        }
-    }
-};
+继续保持学习的热情，在实际项目中不断提升你的C++技能！
 
-// 全局日志器
-class LoggerManager {
-private:
-    static std::unique_ptr<Logger> instance_;
-    static std::once_flag init_flag_;
-    
-public:
-    static Logger& getInstance() {
-        std::call_once(init_flag_, []() {
-            instance_ = std::make_unique<Logger>();
-            
-            // 默认添加控制台输出
-            instance_->addAppender(std::make_unique<ConsoleLogAppender>());
-            
-            // 从配置读取日志设置
-            auto& config = ConfigurationManager::getInstance();
-            if (config.contains("log.file")) {
-                instance_->addAppender(
-                    std::make_unique<FileLogAppender>(config.get<std::string>("log.file"))
-                );
-            }
-            
-            if (config.contains("log.level")) {
-                std::string level_str = config.get<std::string>("log.level");
-                LogLevel level = LogLevel::INFO;
-                if (level_str == "DEBUG") level = LogLevel::DEBUG;
-                else if (level_str == "INFO") level = LogLevel::INFO;
-                else if (level_str == "WARNING") level = LogLevel::WARNING;
-                else if (level_str == "ERROR") level = LogLevel::ERROR;
-                else if (level_str == "CRITICAL") level = LogLevel::CRITICAL;
-                
-                instance_->setMinLevel(level);
-            }
-        });
-        return *instance_;
-    }
-};
-
-std::unique_ptr<Logger> LoggerManager::instance_ = nullptr;
-std::once_flag LoggerManager::init_flag_;
-
-// 便利宏
-#define LOG_DEBUG(...) LoggerManager::getInstance().debug(__VA_ARGS__)
-#define LOG_INFO(...) LoggerManager::getInstance().info(__VA_ARGS__)
-#define LOG_WARNING(...) LoggerManager::getInstance().warning(__VA_ARGS__)
-#define LOG_ERROR(...) LoggerManager::getInstance().error(__VA_ARGS__)
-#define LOG_CRITICAL(...) LoggerManager::getInstance().critical(__VA_ARGS__)
-```
-
-#### 主应用程序
-```cpp
-#include <iostream>
-#include <memory>
-#include <thread>
-#include <chrono>
-
-// 示例任务工厂
-class TaskFactory {
-public:
-    static std::shared_ptr<Task> createCPUTask(const std::string& task_id, 
-                                              const std::string& operation,
-                                              const std::unordered_map<std::string, std::string>& params) {
-        TaskMetadata metadata;
-        metadata.task_id = task_id;
-        metadata.task_name = "CPU Task: " + operation;
-        metadata.type = TaskType::CPU_INTENSIVE;
-        metadata.priority = TaskPriority::NORMAL;
-        metadata.submit_time = std::chrono::system_clock::now();
-        metadata.timeout = std::chrono::seconds(30);
-        metadata.parameters = params;
-        
-        auto computation = [operation](const std::unordered_map<std::string, std::string>& params) -> std::string {
-            if (operation == "fibonacci") {
-                int n = std::stoi(params.at("n"));
-                long long result = 1, prev = 0;
-                for (int i = 2; i <= n; ++i) {
-                    long long temp = result;
-                    result = result + prev;
-                    prev = temp;
-                }
-                return std::to_string(result);
-            } else if (operation == "prime_check") {
-                long long num = std::stoll(params.at("number"));
-                if (num < 2) return "false";
-                for (long long i = 2; i * i <= num; ++i) {
-                    if (num % i == 0) return "false";
-                }
-                return "true";
-            }
-            return "unknown_operation";
-        };
-        
-        return std::make_shared<CPUIntensiveTask>(metadata, computation);
-    }
-};
-
-// 主应用程序类
-class TaskSchedulingSystem {
-private:
-    std::unique_ptr<TaskScheduler> scheduler_;
-    Logger& logger_;
-    
-public:
-    TaskSchedulingSystem() : logger_(LoggerManager::getInstance()) {
-        // 初始化配置
-        auto& config = ConfigurationManager::getInstance();
-        try {
-            config.loadFromFile("config.txt");
-        } catch (const std::exception& e) {
-            // 使用默认配置
-            config.set("scheduler.threads", 4);
-            config.set("scheduler.max_queue_size", 1000);
-            config.set("log.level", "INFO");
-            config.set("log.file", "system.log");
-        }
-        
-        // 创建调度器
-        auto balancer = std::make_unique<RoundRobinBalancer>();
-        scheduler_ = std::make_unique<TaskScheduler>(std::move(balancer));
-        
-        logger_.info("Task Scheduling System initialized");
-    }
-    
-    void start() {
-        logger_.info("Starting Task Scheduling System");
-        
-        // 启动调度器
-        int num_threads = ConfigurationManager::getInstance().get("scheduler.threads", 4);
-        scheduler_->start(num_threads);
-        
-        // 注册一些工作节点
-        scheduler_->registerWorker("worker-1");
-        scheduler_->registerWorker("worker-2");
-        scheduler_->registerWorker("worker-3");
-        
-        logger_.info("System started with {} worker threads", num_threads);
-    }
-    
-    void stop() {
-        logger_.info("Stopping Task Scheduling System");
-        scheduler_->stop();
-        logger_.info("System stopped");
-    }
-    
-    std::string submitTask(const std::string& operation, 
-                          const std::unordered_map<std::string, std::string>& params) {
-        static std::atomic<int> task_counter{0};
-        std::string task_id = "task-" + std::to_string(task_counter.fetch_add(1));
-        
-        auto task = TaskFactory::createCPUTask(task_id, operation, params);
-        std::string submitted_id = scheduler_->submitTask(task);
-        
-        logger_.info("Task submitted: {} ({})", task_id, operation);
-        return submitted_id;
-    }
-    
-    TaskStatus getTaskStatus(const std::string& task_id) {
-        return scheduler_->getTaskStatus(task_id);
-    }
-    
-    std::optional<TaskResult> getTaskResult(const std::string& task_id) {
-        return scheduler_->getTaskResult(task_id);
-    }
-    
-    void printSystemStats() {
-        auto stats = scheduler_->getSystemStats();
-        
-        logger_.info("=== System Statistics ===");
-        logger_.info("Total tasks: {}", stats.total_tasks);
-        logger_.info("Completed tasks: {}", stats.completed_tasks);
-        logger_.info("Failed tasks: {}", stats.failed_tasks);
-        logger_.info("Pending tasks: {}", stats.pending_tasks);
-        logger_.info("Active workers: {}", stats.active_workers);
-        logger_.info("Success rate: {:.2f}%", stats.success_rate * 100);
-    }
-    
-    void runDemo() {
-        logger_.info("Running system demo");
-        
-        // 提交一些测试任务
-        std::vector<std::string> task_ids;
-        
-        // Fibonacci任务
-        for (int i = 10; i <= 50; i += 10) {
-            std::unordered_map<std::string, std::string> params{{"n", std::to_string(i)}};
-            std::string task_id = submitTask("fibonacci", params);
-            task_ids.push_back(task_id);
-        }
-        
-        // 素数检查任务
-        std::vector<long long> numbers{97, 1009, 10007, 100003, 1000003};
-        for (long long num : numbers) {
-            std::unordered_map<std::string, std::string> params{{"number", std::to_string(num)}};
-            std::string task_id = submitTask("prime_check", params);
-            task_ids.push_back(task_id);
-        }
-        
-        // 等待任务完成
-        logger_.info("Waiting for tasks to complete...");
-        
-        while (true) {
-            bool all_completed = true;
-            
-            for (const auto& task_id : task_ids) {
-                TaskStatus status = getTaskStatus(task_id);
-                if (status == TaskStatus::PENDING || status == TaskStatus::RUNNING) {
-                    all_completed = false;
-                    break;
-                }
-            }
-            
-            if (all_completed) break;
-            
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        }
-        
-        // 打印结果
-        logger_.info("All tasks completed. Results:");
-        for (const auto& task_id : task_ids) {
-            auto result = getTaskResult(task_id);
-            if (result) {
-                logger_.info("Task {}: {} ({}ms)", 
-                           task_id, 
-                           result->result_data, 
-                           result->execution_time.count());
-            }
-        }
-        
-        printSystemStats();
-    }
-};
-
-// 主函数
-int main() {
-    try {
-        TaskSchedulingSystem system;
-        system.start();
-        
-        // 运行演示
-        system.runDemo();
-        
-        // 保持系统运行一段时间
-        std::this_thread::sleep_for(std::chrono::seconds(5));
-        
-        system.stop();
-        
-    } catch (const std::exception& e) {
-        std::cerr << "System error: " << e.what() << std::endl;
-        return 1;
-    }
-    
-    return 0;
-}
-```
-
-## 项目特点总结
-
-### 1. 设计模式应用
-- **单例模式**：配置管理器、日志管理器
-- **工厂模式**：任务工厂
-- **策略模式**：负载均衡策略
-- **观察者模式**：任务状态通知
-- **RAII模式**：资源管理
-
-### 2. 现代C++特性
-- **智能指针**：自动内存管理
-- **移动语义**：高效对象传递
-- **模板编程**：泛型设计
-- **并发编程**：多线程任务处理
-- **异常安全**：强异常安全保证
-
-### 3. 系统架构
-- **模块化设计**：松耦合的组件
-- **可扩展性**：易于添加新功能
-- **可配置性**：灵活的配置管理
-- **监控能力**：完善的日志和统计
-- **容错性**：任务重试和错误处理
-
-### 4. 性能考虑
-- **线程池**：复用线程资源
-- **内存管理**：减少内存分配
-- **缓存友好**：优化数据结构
-- **负载均衡**：合理分配任务
-
-## 扩展方向
-
-1. **网络通信**：添加分布式节点通信
-2. **持久化**：任务和结果的数据库存储
-3. **Web界面**：任务管理的Web控制台
-4. **监控告警**：系统监控和告警机制
-5. **安全性**：身份验证和权限控制
-
-这个综合项目展示了如何将前面学到的所有知识点整合到一个实际的系统中，体现了软件工程的最佳实践。
+[返回第四周](/plan/week4/) | [上一天：第27天](/plan/week4/day27/) | [返回主页](/plan/)

@@ -1,19 +1,40 @@
-# 第20天：并发编程基础复习
+﻿---
+title: C++ 学习计划 - 第三周第20天:并发编程基础
+date: 2025-09-16 20:00:00
+categories: Cpp
+tags:
+    - C++ 
+    - Study Plan
+    - Week3
+    - Concurrency
+    - Multithreading
+layout: page
+menu_id: plan
+permalink: /plan/week3/day20/
+---
+
+# 第20天：并发编程基础
 
 ## 学习目标
 掌握C++11引入的并发编程特性，理解线程、同步机制和异步编程，学会编写线程安全的代码。
 
-## 学习内容
+## 核心知识点
 
 ### 1. 并发编程概述
-
-并发编程允许程序同时执行多个任务，提高程序性能和响应性。
 
 #### 为什么需要并发编程？
 - **性能提升**：利用多核处理器
 - **响应性**：避免阻塞主线程
 - **资源利用**：提高系统资源利用率
 - **用户体验**：提供更好的交互体验
+
+#### 并发 vs 并行
+- **并发 (Concurrency)**：同时处理多个任务，可能在单核上通过时间片轮转
+- **并行 (Parallelism)**：真正同时执行多个任务，需要多核支持
+
+#### 参考资料
+- [C++ 并发编程 - cppreference.com](https://en.cppreference.com/w/cpp/thread)
+- [C++ 并发编程详解](https://changkun.de/modern-cpp/zh-cn/07-thread/)
 
 ### 2. std::thread
 
@@ -45,10 +66,6 @@ void basicThreadExample() {
 
 #### 带参数的线程
 ```cpp
-#include <iostream>
-#include <thread>
-#include <string>
-
 void threadWithParams(int id, const std::string& message) {
     std::cout << "线程 " << id << ": " << message << std::endl;
 }
@@ -65,10 +82,6 @@ void parameterizedThreadExample() {
 
 #### Lambda表达式与线程
 ```cpp
-#include <iostream>
-#include <thread>
-#include <vector>
-
 void lambdaThreadExample() {
     std::vector<std::thread> threads;
     
@@ -86,14 +99,17 @@ void lambdaThreadExample() {
 }
 ```
 
+#### 参考资料
+- [std::thread - cppreference.com](https://en.cppreference.com/w/cpp/thread/thread)
+- [C++ std::thread详解](https://blog.csdn.net/weixin_43914604/article/details/105295000)
+
 ### 3. 线程同步
 
 #### std::mutex
+
 `std::mutex`用于保护共享资源，确保同一时间只有一个线程可以访问。
 
 ```cpp
-#include <iostream>
-#include <thread>
 #include <mutex>
 #include <vector>
 
@@ -137,12 +153,8 @@ void mutexExample() {
 ```
 
 #### std::lock_guard 和 std::unique_lock
-```cpp
-#include <iostream>
-#include <thread>
-#include <mutex>
-#include <vector>
 
+```cpp
 class SafeVector {
 private:
     std::vector<int> data;
@@ -150,18 +162,8 @@ private:
     
 public:
     void add(int value) {
-        std::lock_guard<std::mutex> lock(mtx);
+        std::lock_guard<std::mutex> lock(mtx);  // 自动管理锁
         data.push_back(value);
-    }
-    
-    int get(int index) const {
-        std::lock_guard<std::mutex> lock(mtx);
-        return data[index];
-    }
-    
-    size_t size() const {
-        std::lock_guard<std::mutex> lock(mtx);
-        return data.size();
     }
     
     // 使用unique_lock进行更复杂的锁定
@@ -184,36 +186,17 @@ public:
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 };
-
-void lockGuardExample() {
-    SafeVector vec;
-    std::vector<std::thread> threads;
-    
-    // 添加数据
-    for (int i = 0; i < 5; ++i) {
-        threads.emplace_back([&vec, i]() {
-            for (int j = 0; j < 100; ++j) {
-                vec.add(i * 100 + j);
-            }
-        });
-    }
-    
-    // 等待所有线程完成
-    for (auto& t : threads) {
-        t.join();
-    }
-    
-    std::cout << "向量大小: " << vec.size() << std::endl;
-}
 ```
 
+#### 参考资料
+- [std::mutex - cppreference.com](https://en.cppreference.com/w/cpp/thread/mutex)
+- [std::lock_guard - cppreference.com](https://en.cppreference.com/w/cpp/thread/lock_guard)
+
 #### std::condition_variable
+
 `std::condition_variable`用于线程间的条件同步。
 
 ```cpp
-#include <iostream>
-#include <thread>
-#include <mutex>
 #include <condition_variable>
 #include <queue>
 
@@ -227,12 +210,12 @@ public:
     void push(int value) {
         std::lock_guard<std::mutex> lock(mtx);
         queue.push(value);
-        cv.notify_one();
+        cv.notify_one();  // 通知等待的线程
     }
     
     int pop() {
         std::unique_lock<std::mutex> lock(mtx);
-        cv.wait(lock, [this] { return !queue.empty(); });
+        cv.wait(lock, [this] { return !queue.empty(); });  // 等待条件满足
         
         int value = queue.front();
         queue.pop();
@@ -270,15 +253,17 @@ void conditionVariableExample() {
 }
 ```
 
+#### 参考资料
+- [std::condition_variable - cppreference.com](https://en.cppreference.com/w/cpp/thread/condition_variable)
+- [生产者消费者模式详解](https://www.cnblogs.com/skyfsm/p/7050949.html)
+
 ### 4. 原子操作
 
 `std::atomic`提供原子操作，无需锁即可保证线程安全。
 
+#### 基本原子类型
 ```cpp
-#include <iostream>
-#include <thread>
 #include <atomic>
-#include <vector>
 
 class AtomicCounter {
 private:
@@ -295,6 +280,11 @@ public:
     
     void setCount(int value) {
         count.store(value);  // 原子写入
+    }
+    
+    // 比较并交换
+    bool compareAndSwap(int expected, int desired) {
+        return count.compare_exchange_strong(expected, desired);
     }
 };
 
@@ -320,16 +310,36 @@ void atomicExample() {
 }
 ```
 
+#### 内存序 (Memory Order)
+```cpp
+std::atomic<bool> ready{false};
+std::atomic<int> data{0};
+
+void producer() {
+    data.store(42, std::memory_order_relaxed);
+    ready.store(true, std::memory_order_release);  // 释放语义
+}
+
+void consumer() {
+    while (!ready.load(std::memory_order_acquire)) {  // 获取语义
+        std::this_thread::yield();
+    }
+    std::cout << "Data: " << data.load(std::memory_order_relaxed) << std::endl;
+}
+```
+
+#### 参考资料
+- [std::atomic - cppreference.com](https://en.cppreference.com/w/cpp/atomic/atomic)
+- [原子操作和内存模型](https://www.cnblogs.com/skyfsm/p/7050950.html)
+
 ### 5. 异步编程
 
 #### std::async
+
 `std::async`用于异步执行函数，返回`std::future`对象。
 
 ```cpp
-#include <iostream>
 #include <future>
-#include <chrono>
-#include <vector>
 
 int longRunningTask(int n) {
     std::this_thread::sleep_for(std::chrono::seconds(1));
@@ -352,12 +362,8 @@ void asyncExample() {
 ```
 
 #### std::future 和 std::promise
-```cpp
-#include <iostream>
-#include <future>
-#include <thread>
-#include <chrono>
 
+```cpp
 void promiseFutureExample() {
     // 创建promise和future
     std::promise<int> promise;
@@ -378,17 +384,41 @@ void promiseFutureExample() {
 }
 ```
 
-### 6. 线程池
+#### std::packaged_task
 
 ```cpp
-#include <iostream>
-#include <thread>
-#include <mutex>
-#include <condition_variable>
-#include <queue>
-#include <vector>
+void packagedTaskExample() {
+    // 创建packaged_task
+    std::packaged_task<int(int)> task([](int n) {
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        return n * n;
+    });
+    
+    // 获取future
+    std::future<int> future = task.get_future();
+    
+    // 在另一个线程中执行任务
+    std::thread t(std::move(task), 5);
+    
+    // 获取结果
+    int result = future.get();
+    std::cout << "Packaged task结果: " << result << std::endl;
+    
+    t.join();
+}
+```
+
+#### 参考资料
+- [std::async - cppreference.com](https://en.cppreference.com/w/cpp/thread/async)
+- [std::future - cppreference.com](https://en.cppreference.com/w/cpp/thread/future)
+- [异步编程详解](https://blog.csdn.net/weixin_43914604/article/details/105296000)
+
+### 6. 线程池
+
+简单的线程池实现：
+
+```cpp
 #include <functional>
-#include <future>
 
 class ThreadPool {
 private:
@@ -457,205 +487,60 @@ public:
         }
     }
 };
-
-void threadPoolExample() {
-    ThreadPool pool(4);
-    
-    // 提交任务
-    auto result1 = pool.enqueue([](int answer) { return answer; }, 42);
-    auto result2 = pool.enqueue([]() { return 3.14; });
-    
-    std::cout << "结果1: " << result1.get() << std::endl;
-    std::cout << "结果2: " << result2.get() << std::endl;
-}
 ```
 
-## 实践练习
+#### 参考资料
+- [线程池设计模式](https://github.com/progschj/ThreadPool)
+- [C++ 线程池实现详解](https://blog.csdn.net/weixin_43914604/article/details/105297000)
 
-### 练习1：生产者-消费者模式
-```cpp
-#include <iostream>
-#include <thread>
-#include <mutex>
-#include <condition_variable>
-#include <queue>
-#include <chrono>
+### 7. 并发编程最佳实践
 
-template<typename T>
-class ProducerConsumer {
-private:
-    std::queue<T> queue;
-    mutable std::mutex mtx;
-    std::condition_variable cv;
-    bool stop = false;
-    
-public:
-    void produce(T item) {
-        {
-            std::lock_guard<std::mutex> lock(mtx);
-            queue.push(item);
-        }
-        cv.notify_one();
-    }
-    
-    bool consume(T& item) {
-        std::unique_lock<std::mutex> lock(mtx);
-        cv.wait(lock, [this] { return !queue.empty() || stop; });
-        
-        if (queue.empty() && stop) {
-            return false;
-        }
-        
-        item = queue.front();
-        queue.pop();
-        return true;
-    }
-    
-    void stopProducing() {
-        {
-            std::lock_guard<std::mutex> lock(mtx);
-            stop = true;
-        }
-        cv.notify_all();
-    }
-};
+#### 避免数据竞争
+- **使用锁**：保护共享数据
+- **原子操作**：简单数据类型的无锁操作
+- **线程局部存储**：thread_local关键字
 
-void producerConsumerExample() {
-    ProducerConsumer<int> pc;
-    
-    // 生产者线程
-    std::thread producer([&pc]() {
-        for (int i = 0; i < 10; ++i) {
-            pc.produce(i);
-            std::cout << "生产: " << i << std::endl;
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        }
-        pc.stopProducing();
-    });
-    
-    // 消费者线程
-    std::thread consumer([&pc]() {
-        int item;
-        while (pc.consume(item)) {
-            std::cout << "消费: " << item << std::endl;
-        }
-    });
-    
-    producer.join();
-    consumer.join();
-}
-```
+#### 避免死锁
+- **锁顺序**：总是以相同顺序获取锁
+- **超时锁**：使用try_lock_for
+- **RAII**：使用lock_guard自动管理锁
 
-### 练习2：线程安全的单例模式
-```cpp
-#include <iostream>
-#include <mutex>
-#include <memory>
+#### 性能考虑
+- **减少锁竞争**：细粒度锁、读写锁
+- **无锁编程**：使用原子操作
+- **线程数量**：通常等于CPU核心数
 
-class Singleton {
-private:
-    static std::unique_ptr<Singleton> instance;
-    static std::mutex mtx;
-    
-    Singleton() = default;
-    
-public:
-    static Singleton& getInstance() {
-        if (!instance) {
-            std::lock_guard<std::mutex> lock(mtx);
-            if (!instance) {
-                instance = std::unique_ptr<Singleton>(new Singleton);
-            }
-        }
-        return *instance;
-    }
-    
-    void doSomething() {
-        std::cout << "单例对象正在工作" << std::endl;
-    }
-    
-    // 禁止拷贝和赋值
-    Singleton(const Singleton&) = delete;
-    Singleton& operator=(const Singleton&) = delete;
-};
+#### 参考资料
+- [C++ 并发编程最佳实践](https://herbsutter.com/2013/02/11/atomic-weapons-the-c-memory-model-and-modern-hardware/)
+- [多线程编程指南](https://www.cnblogs.com/skyfsm/p/7050951.html)
 
-std::unique_ptr<Singleton> Singleton::instance = nullptr;
-std::mutex Singleton::mtx;
+## 实用教程和文档
 
-void singletonExample() {
-    // 多线程访问单例
-    std::vector<std::thread> threads;
-    
-    for (int i = 0; i < 5; ++i) {
-        threads.emplace_back([]() {
-            Singleton::getInstance().doSomething();
-        });
-    }
-    
-    for (auto& t : threads) {
-        t.join();
-    }
-}
-```
+### 官方文档
+- [C++ 线程支持库 - cppreference.com](https://en.cppreference.com/w/cpp/thread)
+- [C++ 原子操作库 - cppreference.com](https://en.cppreference.com/w/cpp/atomic)
 
-### 练习3：并行计算
-```cpp
-#include <iostream>
-#include <thread>
-#include <vector>
-#include <numeric>
-#include <chrono>
-#include <future>
+### 优质教程
+- [现代C++并发编程详解](https://changkun.de/modern-cpp/zh-cn/07-thread/)
+- [C++ 并发编程实战](https://github.com/xiaoweiChen/CPP-Concurrency-In-Action-2ed-2019)
+- [多线程编程指南](https://blog.csdn.net/weixin_43914604/article/details/105295000)
 
-class ParallelCalculator {
-public:
-    static long long parallelSum(const std::vector<int>& data, int numThreads) {
-        int chunkSize = data.size() / numThreads;
-        std::vector<std::future<long long>> futures;
-        
-        for (int i = 0; i < numThreads; ++i) {
-            int start = i * chunkSize;
-            int end = (i == numThreads - 1) ? data.size() : (i + 1) * chunkSize;
-            
-            futures.push_back(std::async(std::launch::async, [&data, start, end]() {
-                return std::accumulate(data.begin() + start, data.begin() + end, 0LL);
-            }));
-        }
-        
-        long long total = 0;
-        for (auto& future : futures) {
-            total += future.get();
-        }
-        
-        return total;
-    }
-    
-    static long long sequentialSum(const std::vector<int>& data) {
-        return std::accumulate(data.begin(), data.end(), 0LL);
-    }
-};
+### 实战案例
+- [并发编程在实际项目中的应用](https://www.bfilipek.com/2017/08/cpp17-details-parallel-algorithms.html)
+- [高性能服务器编程](https://github.com/huihut/interview#%E5%A4%9A%E7%BA%BF%E7%A8%8B)
 
-void parallelCalculationExample() {
-    // 创建大量数据
-    std::vector<int> data(1000000);
-    std::iota(data.begin(), data.end(), 1);
-    
-    // 顺序计算
-    auto start = std::chrono::high_resolution_clock::now();
-    long long seqResult = ParallelCalculator::sequentialSum(data);
-    auto end = std::chrono::high_resolution_clock::now();
-    auto seqDuration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    
-    // 并行计算
-    start = std::chrono::high_resolution_clock::now();
-    long long parResult = ParallelCalculator::parallelSum(data, 4);
-    end = std::chrono::high_resolution_clock::now();
-    auto parDuration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    
-    std::cout << "顺序计算结果: " << seqResult << " (耗时: " << seqDuration.count() << "ms)" << std::endl;
-    std::cout << "并行计算结果: " << parResult << " (耗时: " << parDuration.count() << "ms)" << std::endl;
-}
-```
+## 今日练习
+
+### 基础练习
+1. 实现一个生产者-消费者模式的程序
+2. 编写一个线程安全的单例模式
+3. 实现一个并行计算程序，比较串行和并行的性能
+
+### 算法题推荐
+1. [LeetCode 1114. Print in Order](https://leetcode.com/problems/print-in-order/) - 使用条件变量控制线程执行顺序
+2. [LeetCode 1115. Print FooBar Alternately](https://leetcode.com/problems/print-foobar-alternately/) - 使用互斥锁和条件变量实现交替打印
+3. [LeetCode 1116. Print Zero Even Odd](https://leetcode.com/problems/print-zero-even-odd/) - 使用信号量控制线程执行
+4. [LeetCode 1117. Building H2O](https://leetcode.com/problems/building-h2o/) - 使用条件变量实现H2O分子构建
 
 ## 学习要点总结
 
@@ -665,13 +550,7 @@ void parallelCalculationExample() {
 4. **异步编程**：掌握std::async和std::future的使用
 5. **线程安全**：编写线程安全的代码
 
-## 今日算法题
+## 下一天预告
+明天我们将学习文件操作与IO，包括文件流、二进制文件、字符串流等C++的IO处理技术。
 
-完成以下4道LeetCode题目，巩固并发编程的使用：
-
-1. [LeetCode 1114. Print in Order](https://leetcode.com/problems/print-in-order/) - 使用条件变量控制线程执行顺序
-2. [LeetCode 1115. Print FooBar Alternately](https://leetcode.com/problems/print-foobar-alternately/) - 使用互斥锁和条件变量实现交替打印
-3. [LeetCode 1116. Print Zero Even Odd](https://leetcode.com/problems/print-zero-even-odd/) - 使用信号量控制线程执行
-4. [LeetCode 1117. Building H2O](https://leetcode.com/problems/building-h2o/) - 使用条件变量实现H2O分子构建
-
-每道题目都涉及并发编程的使用，是很好的实践机会！
+[上一天：移动语义](/plan/week3/day19/) | [返回第三周总览](/plan/week3/) | [下一天：文件操作与IO](/plan/week3/day21/)

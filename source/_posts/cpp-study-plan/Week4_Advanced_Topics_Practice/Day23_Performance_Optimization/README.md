@@ -1,540 +1,375 @@
+﻿---
+title: C++ 学习计划 - 第23天:性能优化
+date: 2025-09-16 10:26:00
+categories: Cpp
+tags:
+    - C++ 
+    - Study Plan
+    - Week4
+    - Day23
+layout: page
+menu_id: plan
+permalink: /plan/week4/day23/
+---
+
 # 第23天：性能优化
 
 ## 学习目标
-掌握C++性能优化的核心技巧和方法，学会分析性能瓶颈，运用各种优化策略提升程序执行效率。
+学习C++性能优化技巧，掌握编译器优化、内存优化和算法优化等方法，提高程序运行效率。
 
-## 今日学习内容
+## 学习资源链接
 
-### 1. 编译器优化
-**概念：** 利用编译器的优化能力提升程序性能。
+### 📚 官方文档和教程
+- [C++ Optimization Guide](https://www.agner.org/optimize/optimizing_cpp.pdf) - C++优化指南(Agner Fog)
+- [Intel C++ Optimization Guide](https://software.intel.com/content/www/us/en/develop/articles/intel-guide-for-developing-multithreaded-applications.html) - Intel C++优化指南
+- [GCC Optimization Options](https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html) - GCC编译器优化选项
+- [Clang Optimization](https://clang.llvm.org/docs/CommandGuide/clang.html#optimization-levels) - Clang优化选项
 
-**优化选项：**
-- `-O0`: 无优化（调试用）
-- `-O1`: 基本优化
-- `-O2`: 标准优化（推荐）
-- `-O3`: 激进优化
-- `-Ofast`: 最快速度优化
-- `-Os`: 优化代码大小
+### 🎥 视频教程
+- [C++ Performance Optimization](https://www.youtube.com/watch?v=eOq4C1iTX8A) - C++性能优化技巧
+- [The Cherno - C++ Performance](https://www.youtube.com/watch?v=koTf7u0v41o) - 性能优化实战
+- [CppCon Performance Talks](https://www.youtube.com/results?search_query=cppcon+performance) - CppCon性能优化演讲
 
-**编译器优化示例：**
-```cpp
-// 编译命令比较
-// g++ -O0 -o program_debug program.cpp     // 调试版本
-// g++ -O2 -o program_release program.cpp   // 发布版本
-// g++ -O3 -march=native -o program_fast program.cpp  // 针对本机优化
+### 📖 深入阅读
+- [Optimized C++](https://www.amazon.com/Optimized-Proven-Techniques-Faster-Code/dp/1491922060) - C++优化技术
+- [High Performance Computing](https://www.amazon.com/Introduction-High-Performance-Scientific-Computing/dp/1611973015) - 高性能计算
+- [Computer Systems: A Programmer's Perspective](https://www.amazon.com/Computer-Systems-Programmers-Perspective-3rd/dp/013409266X) - 系统级性能优化
 
-// 性能测试代码
-#include <chrono>
-#include <vector>
-#include <numeric>
+### 🔧 性能分析工具
+- [Intel VTune Profiler](https://software.intel.com/content/www/us/en/develop/tools/vtune-profiler.html) - 性能分析工具
+- [Valgrind](https://valgrind.org/) - 内存分析和性能分析
+- [Google Benchmark](https://github.com/google/benchmark) - C++基准测试库
+- [perf](https://perf.wiki.kernel.org/index.php/Main_Page) - Linux性能分析工具
 
-class PerformanceTimer {
-private:
-    std::chrono::high_resolution_clock::time_point start_time;
-    std::string operation_name;
-    
-public:
-    PerformanceTimer(const std::string& name) : operation_name(name) {
-        start_time = std::chrono::high_resolution_clock::now();
-    }
-    
-    ~PerformanceTimer() {
-        auto end_time = std::chrono::high_resolution_clock::now();
-        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
-            end_time - start_time).count();
-        std::cout << operation_name << " took: " << duration << " microseconds" << std::endl;
-    }
-};
+## 学习内容
 
-// 测试不同优化级别的性能差异
-void testOptimizationLevels() {
-    const size_t SIZE = 1000000;
-    std::vector<int> data(SIZE);
-    std::iota(data.begin(), data.end(), 1);
-    
-    {
-        PerformanceTimer timer("Vector sum calculation");
-        long long sum = std::accumulate(data.begin(), data.end(), 0LL);
-        std::cout << "Sum: " << sum << std::endl;
-    }
-}
+### 1. 编译器优化选项
+- **优化级别**：-O0, -O1, -O2, -O3, -Os, -Ofast
+- **特定优化**：-finline-functions, -funroll-loops, -ffast-math
+- **调试友好优化**：-Og
+- **链接时优化**：-flto (Link Time Optimization)
+
+```bash
+# 基本优化编译
+g++ -O2 -std=c++17 program.cpp -o program
+
+# 最大优化（可能影响调试）
+g++ -O3 -DNDEBUG -march=native program.cpp -o program
+
+# 链接时优化
+g++ -O3 -flto program.cpp -o program
 ```
 
 ### 2. 内联函数优化
-**概念：** 通过内联减少函数调用开销。
+- **内联函数的作用**：消除函数调用开销
+- **编译器内联决策**：函数大小、调用频率
+- **强制内联**：`__forceinline` (MSVC), `__attribute__((always_inline))` (GCC)
 
-**使用原则：**
-- 小函数适合内联
-- 频繁调用的函数
-- 避免内联递归函数
-- 避免内联复杂函数
-
-**内联优化示例：**
 ```cpp
-// 传统函数调用（有开销）
-double calculateDistance(double x1, double y1, double x2, double y2) {
-    return std::sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
-}
+// 内联函数示例
+class Vector3 {
+private:
+    float x, y, z;
+    
+public:
+    // 简单函数适合内联
+    inline float dot(const Vector3& other) const {
+        return x * other.x + y * other.y + z * other.z;
+    }
+    
+    // 复杂函数不适合内联
+    Vector3 normalize() const; // 在.cpp中实现
+};
 
-// 内联函数（减少调用开销）
-inline double calculateDistanceInline(double x1, double y1, double x2, double y2) {
-    return std::sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
-}
-
-// 更好的做法：使用constexpr
-constexpr double calculateDistanceConstexpr(double x1, double y1, double x2, double y2) {
-    return std::sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
-}
-
-// 模板内联
+// 模板函数自动内联
 template<typename T>
-constexpr T square(T x) {
-    return x * x;
-}
-
-template<typename T>
-constexpr T distance(T x1, T y1, T x2, T y2) {
-    return std::sqrt(square(x2-x1) + square(y2-y1));
+constexpr T max(const T& a, const T& b) {
+    return (a > b) ? a : b;
 }
 ```
 
-### 3. 缓存友好的编程
-**概念：** 优化内存访问模式，提高缓存命中率。
+### 3. 缓存友好的代码
+- **数据局部性**：时间局部性和空间局部性
+- **缓存行对齐**：避免false sharing
+- **数据结构优化**：AoS vs SoA (Array of Structures vs Structure of Arrays)
 
-**关键原则：**
-- 时间局部性：重复访问相同数据
-- 空间局部性：访问相邻的数据
-- 避免缓存抖动
-- 数据结构对齐
-
-**缓存优化示例：**
 ```cpp
-#include <vector>
-#include <array>
-#include <memory>
-
-// 缓存不友好的数据结构
-struct BadDataLayout {
-    char a;      // 1 byte
-    double b;    // 8 bytes (可能有7字节填充)
-    char c;      // 1 byte
-    int d;       // 4 bytes (可能有3字节填充)
-};
-
-// 缓存友好的数据结构
-struct GoodDataLayout {
-    double b;    // 8 bytes
-    int d;       // 4 bytes
-    char a;      // 1 byte
-    char c;      // 1 byte
-    // 总共16字节，无浪费
-};
-
-// 结构体数组 vs 数组结构体
-class DataOrganization {
-public:
-    // AoS (Array of Structures) - 缓存不友好
-    struct Point3D {
-        float x, y, z;
-    };
-    std::vector<Point3D> points_aos;
+// 缓存友好的矩阵乘法
+void matrix_multiply_optimized(const std::vector<std::vector<double>>& A,
+                              const std::vector<std::vector<double>>& B,
+                              std::vector<std::vector<double>>& C) {
+    size_t n = A.size();
     
-    // SoA (Structure of Arrays) - 缓存友好
-    struct Points3D {
-        std::vector<float> x;
-        std::vector<float> y;
-        std::vector<float> z;
-    };
-    Points3D points_soa;
+    // 分块矩阵乘法，提高缓存命中率
+    const size_t BLOCK_SIZE = 64;
     
-    // 测试缓存性能
-    void testCachePerformance(size_t n) {
-        // 初始化数据
-        points_aos.resize(n);
-        points_soa.x.resize(n);
-        points_soa.y.resize(n);
-        points_soa.z.resize(n);
-        
-        for (size_t i = 0; i < n; ++i) {
-            points_aos[i] = {float(i), float(i+1), float(i+2)};
-            points_soa.x[i] = float(i);
-            points_soa.y[i] = float(i+1);
-            points_soa.z[i] = float(i+2);
-        }
-        
-        // 测试AoS性能（只访问x坐标）
-        {
-            PerformanceTimer timer("AoS X-coordinate sum");
-            float sum = 0.0f;
-            for (const auto& point : points_aos) {
-                sum += point.x;  // 每次访问都会加载整个Point3D
+    for (size_t bi = 0; bi < n; bi += BLOCK_SIZE) {
+        for (size_t bj = 0; bj < n; bj += BLOCK_SIZE) {
+            for (size_t bk = 0; bk < n; bk += BLOCK_SIZE) {
+                // 块内计算
+                for (size_t i = bi; i < std::min(bi + BLOCK_SIZE, n); ++i) {
+                    for (size_t j = bj; j < std::min(bj + BLOCK_SIZE, n); ++j) {
+                        for (size_t k = bk; k < std::min(bk + BLOCK_SIZE, n); ++k) {
+                            C[i][j] += A[i][k] * B[k][j];
+                        }
+                    }
+                }
             }
-            std::cout << "AoS sum: " << sum << std::endl;
-        }
-        
-        // 测试SoA性能（只访问x坐标）
-        {
-            PerformanceTimer timer("SoA X-coordinate sum");
-            float sum = 0.0f;
-            for (float x : points_soa.x) {
-                sum += x;  // 连续内存访问，缓存友好
-            }
-            std::cout << "SoA sum: " << sum << std::endl;
         }
     }
+}
+
+// SoA vs AoS 示例
+// AoS (Array of Structures) - 缓存不友好
+struct ParticleAoS {
+    float x, y, z;    // 位置
+    float vx, vy, vz; // 速度
+    float mass;       // 质量
+    int id;          // ID
+};
+std::vector<ParticleAoS> particles_aos;
+
+// SoA (Structure of Arrays) - 缓存友好
+struct ParticlesSoA {
+    std::vector<float> x, y, z;        // 位置
+    std::vector<float> vx, vy, vz;     // 速度
+    std::vector<float> mass;           // 质量
+    std::vector<int> id;               // ID
 };
 ```
 
 ### 4. 避免不必要的拷贝
-**概念：** 通过引用、移动语义等减少对象拷贝开销。
+- **移动语义**：使用std::move
+- **引用传递**：避免参数拷贝
+- **返回值优化**：RVO和NRVO
+- **原地构造**：emplace_back vs push_back
 
-**优化技巧：**
-- 使用const引用传递参数
-- 使用移动语义
-- 返回值优化(RVO/NRVO)
-- emplace vs insert
-
-**拷贝优化示例：**
 ```cpp
-#include <string>
-#include <vector>
-#include <utility>
-
-class CopyOptimization {
+class LargeObject {
 private:
-    std::vector<std::string> data;
+    std::vector<int> data;
     
 public:
-    // 不好的做法：按值传递
-    void addItemBad(std::string item) {
-        data.push_back(item);  // 可能产生两次拷贝
+    // 移动构造函数
+    LargeObject(LargeObject&& other) noexcept 
+        : data(std::move(other.data)) {}
+    
+    // 移动赋值运算符
+    LargeObject& operator=(LargeObject&& other) noexcept {
+        if (this != &other) {
+            data = std::move(other.data);
+        }
+        return *this;
+    }
+};
+
+// 避免拷贝的函数设计
+class DataProcessor {
+public:
+    // 使用const引用避免拷贝
+    void process(const std::vector<int>& input) {
+        // 处理数据...
     }
     
-    // 好的做法：const引用传递
-    void addItemGood(const std::string& item) {
-        data.push_back(item);  // 一次拷贝
+    // 返回值优化 (RVO)
+    std::vector<int> createData() {
+        std::vector<int> result;
+        // 填充数据...
+        return result; // 编译器会优化掉拷贝
     }
     
-    // 更好的做法：完美转发
-    template<typename T>
-    void addItem(T&& item) {
-        data.emplace_back(std::forward<T>(item));
-    }
-    
-    // 移动语义优化
-    void addItemMove(std::string item) {
-        data.push_back(std::move(item));  // 移动，不拷贝
-    }
-    
-    // 返回值优化
-    std::vector<std::string> getDataCopy() const {
-        return data;  // RVO优化，不会产生额外拷贝
-    }
-    
-    // 引用返回避免拷贝
-    const std::vector<std::string>& getData() const {
-        return data;
-    }
-    
-    // emplace vs push_back
-    void testEmplaceVsPushBack() {
-        std::vector<std::string> vec;
+    // 原地构造
+    void addItems(std::vector<LargeObject>& container) {
+        // 好的做法：原地构造
+        container.emplace_back(/* 构造参数 */);
         
-        // push_back: 构造临时对象，然后拷贝/移动
-        vec.push_back(std::string("Hello"));
-        
-        // emplace_back: 直接在容器中构造对象
-        vec.emplace_back("World");  // 更高效
-        
-        // 对于复杂对象，差异更明显
-        std::vector<std::pair<int, std::string>> pairs;
-        
-        // push_back: 构造临时pair，然后移动
-        pairs.push_back(std::make_pair(1, "one"));
-        
-        // emplace_back: 直接构造pair
-        pairs.emplace_back(2, "two");  // 更高效
+        // 避免：先构造再拷贝
+        // container.push_back(LargeObject(/* 参数 */));
     }
 };
 ```
 
 ### 5. 内存池技术
-**概念：** 预分配内存块，减少动态内存分配的开销。
+- **内存池概念**：预分配内存块，减少malloc/free调用
+- **对象池**：重用对象实例
+- **栈分配器**：线性内存分配
 
-**应用场景：**
-- 频繁的小对象分配
-- 实时系统
-- 游戏引擎
-- 高性能服务器
-
-**内存池实现：**
 ```cpp
-#include <memory>
-#include <vector>
-#include <stack>
-
-template<typename T, size_t BlockSize = 4096>
+// 简单内存池实现
+template<typename T, size_t PoolSize>
 class MemoryPool {
 private:
-    struct Block {
-        alignas(T) char data[BlockSize];
-    };
-    
-    std::vector<std::unique_ptr<Block>> blocks;
-    std::stack<T*> freeList;
-    size_t objectsPerBlock;
-    
-    void allocateNewBlock() {
-        auto block = std::make_unique<Block>();
-        char* ptr = block->data;
-        
-        // 将块中的内存分割成对象大小的片段
-        for (size_t i = 0; i < objectsPerBlock; ++i) {
-            freeList.push(reinterpret_cast<T*>(ptr + i * sizeof(T)));
-        }
-        
-        blocks.push_back(std::move(block));
-    }
+    alignas(T) char pool[PoolSize * sizeof(T)];
+    std::bitset<PoolSize> used;
+    size_t next_free = 0;
     
 public:
-    MemoryPool() : objectsPerBlock(BlockSize / sizeof(T)) {
-        static_assert(sizeof(T) <= BlockSize, "Object size too large for block");
-        allocateNewBlock();
-    }
-    
-    ~MemoryPool() {
-        // 析构函数会自动清理所有块
-    }
-    
-    T* allocate() {
-        if (freeList.empty()) {
-            allocateNewBlock();
+    template<typename... Args>
+    T* allocate(Args&&... args) {
+        // 找到空闲位置
+        for (size_t i = next_free; i < PoolSize; ++i) {
+            if (!used[i]) {
+                used[i] = true;
+                next_free = i + 1;
+                return new(pool + i * sizeof(T)) T(std::forward<Args>(args)...);
+            }
         }
         
-        T* ptr = freeList.top();
-        freeList.pop();
-        return ptr;
+        // 从头开始查找
+        for (size_t i = 0; i < next_free; ++i) {
+            if (!used[i]) {
+                used[i] = true;
+                next_free = i + 1;
+                return new(pool + i * sizeof(T)) T(std::forward<Args>(args)...);
+            }
+        }
+        
+        return nullptr; // 池已满
     }
     
     void deallocate(T* ptr) {
-        if (ptr) {
-            freeList.push(ptr);
+        if (ptr >= reinterpret_cast<T*>(pool) && 
+            ptr < reinterpret_cast<T*>(pool + sizeof(pool))) {
+            ptr->~T();
+            size_t index = (reinterpret_cast<char*>(ptr) - pool) / sizeof(T);
+            used[index] = false;
+            next_free = std::min(next_free, index);
         }
     }
-    
-    // 获取统计信息
-    size_t getBlockCount() const { return blocks.size(); }
-    size_t getFreeObjectCount() const { return freeList.size(); }
-    size_t getTotalObjectCount() const { return blocks.size() * objectsPerBlock; }
-    size_t getUsedObjectCount() const { return getTotalObjectCount() - getFreeObjectCount(); }
 };
 
-// 使用内存池的对象
-class PooledObject {
-private:
-    static MemoryPool<PooledObject> pool;
-    int value;
-    
-public:
-    PooledObject(int v = 0) : value(v) {}
-    
-    // 重载new和delete操作符
-    void* operator new(size_t size) {
-        return pool.allocate();
-    }
-    
-    void operator delete(void* ptr) {
-        pool.deallocate(static_cast<PooledObject*>(ptr));
-    }
-    
-    int getValue() const { return value; }
-    void setValue(int v) { value = v; }
-};
-
-// 静态成员定义
-MemoryPool<PooledObject> PooledObject::pool;
+// 使用示例
+MemoryPool<std::string, 1000> string_pool;
+auto* str = string_pool.allocate("Hello, World!");
+// 使用字符串...
+string_pool.deallocate(str);
 ```
 
-### 6. 分支预测优化
-**概念：** 帮助CPU更好地预测分支，减少管道停顿。
+### 6. 算法优化技巧
+- **选择合适的数据结构**：vector vs list vs deque
+- **算法复杂度优化**：减少时间复杂度
+- **并行算法**：使用std::execution policy
 
-**优化技巧：**
-- 使用likely/unlikely属性
-- 避免不可预测的分支
-- 循环展开
-- 查表替代条件判断
-
-**分支优化示例：**
 ```cpp
-#include <random>
+#include <execution>
 #include <algorithm>
-
-class BranchOptimization {
-public:
-    // 使用C++20的likely/unlikely属性
-    int processValue(int x) {
-        if (x > 0) [[likely]] {  // 告诉编译器这个分支更可能执行
-            return x * 2;
-        } else [[unlikely]] {
-            return x * -1;
-        }
-    }
-    
-    // 避免不可预测的分支
-    int findMaxTraditional(const std::vector<int>& data) {
-        int max_val = data[0];
-        for (size_t i = 1; i < data.size(); ++i) {
-            if (data[i] > max_val) {  // 分支不可预测
-                max_val = data[i];
-            }
-        }
-        return max_val;
-    }
-    
-    // 使用STL算法避免显式分支
-    int findMaxOptimized(const std::vector<int>& data) {
-        return *std::max_element(data.begin(), data.end());
-    }
-    
-    // 查表替代条件判断
-    static constexpr int LOOKUP_TABLE[256] = {
-        // 预计算的值，避免运行时计算
-        0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4,
-        // ... 更多值
-    };
-    
-    int popCountLookup(uint8_t x) {
-        return LOOKUP_TABLE[x];  // O(1)查表，无分支
-    }
-    
-    int popCountBranches(uint8_t x) {
-        int count = 0;
-        while (x) {  // 包含不可预测的分支
-            if (x & 1) count++;
-            x >>= 1;
-        }
-        return count;
-    }
-};
-```
-
-### 7. SIMD优化
-**概念：** 使用Single Instruction, Multiple Data指令集提升并行计算性能。
-
-**SIMD示例：**
-```cpp
-#include <immintrin.h>  // Intel intrinsics
-#include <vector>
 #include <numeric>
 
-class SIMDOptimization {
+void optimization_examples() {
+    std::vector<int> data(1000000);
+    std::iota(data.begin(), data.end(), 1);
+    
+    // 并行排序
+    std::sort(std::execution::par_unseq, data.begin(), data.end());
+    
+    // 并行累加
+    auto sum = std::reduce(std::execution::par_unseq, 
+                          data.begin(), data.end(), 0);
+    
+    // 并行变换
+    std::transform(std::execution::par_unseq,
+                   data.begin(), data.end(), data.begin(),
+                   [](int x) { return x * x; });
+}
+
+// 数据结构选择示例
+class PerformanceComparison {
 public:
-    // 传统标量加法
-    void addArraysScalar(const float* a, const float* b, float* result, size_t size) {
-        for (size_t i = 0; i < size; ++i) {
-            result[i] = a[i] + b[i];
+    // 顺序访问：vector最优
+    void sequential_access() {
+        std::vector<int> vec(10000);
+        for (auto& item : vec) {
+            item *= 2; // 缓存友好
         }
     }
     
-    // SIMD向量加法（AVX）
-    void addArraysSIMD(const float* a, const float* b, float* result, size_t size) {
-        size_t simd_size = size - (size % 8);  // 8个float为一组
-        
-        // SIMD处理
-        for (size_t i = 0; i < simd_size; i += 8) {
-            __m256 va = _mm256_load_ps(&a[i]);
-            __m256 vb = _mm256_load_ps(&b[i]);
-            __m256 vresult = _mm256_add_ps(va, vb);
-            _mm256_store_ps(&result[i], vresult);
-        }
-        
-        // 处理剩余元素
-        for (size_t i = simd_size; i < size; ++i) {
-            result[i] = a[i] + b[i];
+    // 频繁插入删除：list可能更好
+    void frequent_insertions() {
+        std::list<int> lst;
+        for (int i = 0; i < 1000; ++i) {
+            lst.insert(std::next(lst.begin(), i/2), i);
         }
     }
     
-    // 向量点积SIMD优化
-    float dotProductSIMD(const float* a, const float* b, size_t size) {
-        __m256 sum = _mm256_setzero_ps();
-        size_t simd_size = size - (size % 8);
-        
-        for (size_t i = 0; i < simd_size; i += 8) {
-            __m256 va = _mm256_load_ps(&a[i]);
-            __m256 vb = _mm256_load_ps(&b[i]);
-            sum = _mm256_fmadd_ps(va, vb, sum);  // fused multiply-add
+    // 查找操作：set/map更优
+    void frequent_lookups() {
+        std::unordered_set<int> set;
+        // O(1) 平均查找时间
+        if (set.find(42) != set.end()) {
+            // 找到元素
         }
-        
-        // 水平加法
-        __m128 sum_high = _mm256_extractf128_ps(sum, 1);
-        __m128 sum_low = _mm256_castps256_ps128(sum);
-        __m128 sum_final = _mm_add_ps(sum_high, sum_low);
-        
-        sum_final = _mm_hadd_ps(sum_final, sum_final);
-        sum_final = _mm_hadd_ps(sum_final, sum_final);
-        
-        float result = _mm_cvtss_f32(sum_final);
-        
-        // 处理剩余元素
-        for (size_t i = simd_size; i < size; ++i) {
-            result += a[i] * b[i];
-        }
-        
-        return result;
     }
 };
+```
+
+## 性能测试和分析
+
+### 基准测试示例
+```cpp
+#include <chrono>
+#include <iostream>
+
+class Timer {
+private:
+    std::chrono::high_resolution_clock::time_point start_time;
+    
+public:
+    Timer() : start_time(std::chrono::high_resolution_clock::now()) {}
+    
+    ~Timer() {
+        auto end_time = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::microseconds>
+                       (end_time - start_time);
+        std::cout << "Time taken: " << duration.count() << " microseconds\n";
+    }
+};
+
+void benchmark_example() {
+    std::vector<int> data(1000000);
+    std::iota(data.begin(), data.end(), 1);
+    
+    {
+        Timer t;
+        std::sort(data.begin(), data.end());
+    } // Timer析构时输出时间
+}
 ```
 
 ## 实践练习
 
-### 练习1：性能分析工具使用
-```cpp
-// 使用chrono进行性能测量
-// 使用valgrind进行内存分析
-// 使用gprof进行性能分析
-```
+### 练习1：矩阵运算优化
+优化矩阵乘法算法：
+- 实现分块矩阵乘法
+- 比较不同优化级别的性能
+- 使用性能分析工具测量
 
-### 练习2：缓存优化实战
-```cpp
-// 实现矩阵乘法的缓存优化版本
-// 比较不同数据布局的性能差异
-```
+### 练习2：字符串处理优化
+优化字符串处理函数：
+- 减少内存分配
+- 使用string_view减少拷贝
+- 实现自定义字符串池
 
-### 练习3：内存池实现
-```cpp
-// 实现一个通用的内存池
-// 测试内存池与标准allocator的性能差异
-```
+### 练习3：容器性能比较
+比较不同容器的性能：
+- vector vs list vs deque
+- 不同操作模式下的性能差异
+- 内存使用情况分析
 
-## 重点总结
+### 练习4：并行算法应用
+使用并行算法优化计算密集型任务：
+- 并行排序
+- 并行数值计算
+- 并行搜索算法
 
-1. **编译器优化**：合理使用优化选项，理解编译器能力
-2. **内存访问优化**：提高缓存命中率，优化数据布局
-3. **减少拷贝**：使用移动语义、引用、emplace等技术
-4. **内存管理**：使用内存池减少分配开销
-5. **分支优化**：减少不可预测分支，使用查表等技术
-6. **并行化**：使用SIMD指令提升计算密集型任务性能
+## 今日总结
+通过学习性能优化，你应该掌握：
+1. 编译器优化选项的使用
+2. 缓存友好代码的编写技巧
+3. 内存管理和对象生命周期优化
+4. 算法和数据结构的性能考虑
+5. 性能测试和分析方法
 
-## 性能测试方法
+## 明天预告
+明天我们将学习调试与测试技巧，包括GDB调试器、内存检查工具和单元测试框架的使用。
 
-1. **基准测试**：使用统一的测试环境和数据
-2. **多次测量**：避免偶然因素影响
-3. **统计分析**：计算平均值、标准差等
-4. **热身运行**：排除冷启动影响
-5. **内存对齐**：确保数据正确对齐
-
-## 注意事项
-
-1. **过早优化是万恶之源**：先保证正确性，再考虑性能
-2. **测量驱动优化**：使用性能分析工具定位瓶颈
-3. **平台相关性**：不同硬件平台优化效果可能不同
-4. **可维护性**：不要为了性能牺牲代码可读性
-5. **编译器已经很智能**：很多优化编译器会自动完成
-
-## 拓展阅读
-
-- 《Optimized C++》
-- 《Computer Systems: A Programmer's Perspective》
-- Intel优化手册
-- Agner Fog的优化指南
-- Chandler Carruth的CppCon演讲
+[返回第四周](/plan/week4/) | [上一天：第22天](/plan/week4/day22/) | [下一天：第24天](/plan/week4/day24/)

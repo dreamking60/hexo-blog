@@ -1,636 +1,1029 @@
+﻿---
+title: C++ 学习计划 - 第10天:继承
+date: 2025-09-16 10:20:00
+categories: Cpp
+tags:
+    - C++ 
+    - Study Plan
+    - Week2
+    - Day10
+layout: page
+menu_id: plan
+permalink: /plan/week2/day10/
+---
+
 # 第10天：继承
 
 ## 学习目标
-掌握C++继承机制，理解基类与派生类的关系，学会设计合理的继承层次，掌握函数重写和虚析构函数的使用。
+掌握面向对象的继承机制，理解基类和派生类的关系，学会设计类继承体系。
+
+## 学习资源链接
+
+### 📚 官方文档和教程
+- [C++ Reference - Inheritance](https://en.cppreference.com/w/cpp/language/derived_class) - C++官方继承文档
+- [LearnCpp - Inheritance](https://www.learncpp.com/cpp-tutorial/introduction-to-inheritance/) - 继承详解教程
+- [GeeksforGeeks - Inheritance](https://www.geeksforgeeks.org/inheritance-in-c/) - 继承基础知识
+
+### 🎥 视频教程
+- [The Cherno C++ Inheritance](https://www.youtube.com/watch?v=X8nYM8GdnmE) - 继承概念深入讲解
+- [C++ Inheritance Tutorial](https://www.youtube.com/watch?v=9RJTQmK0YPI) - 继承实例演示
+
+### 📖 深入阅读
+- [C++ Primer 第5版 - 第15章](https://www.amazon.com/Primer-5th-Stanley-Lippman/dp/0321714113) - 面向对象程序设计
+- [Effective C++ - 条款32-40](https://www.amazon.com/Effective-Specific-Improve-Programs-Designs/dp/0321334876) - 继承与面向对象设计
+- [Design Patterns](https://www.amazon.com/Design-Patterns-Elements-Reusable-Object-Oriented/dp/0201633612) - 继承在设计模式中的应用
 
 ## 学习内容
 
-### 1. 继承的基本概念
-继承是面向对象编程的核心特性之一，允许一个类（派生类）继承另一个类（基类）的成员。
+### 1. 继承基础概念
+- 基类和派生类
+- is-a关系
+- 代码重用
+- 继承的语法
 
-#### 继承的语法
+### 2. 继承方式
+- public继承
+- private继承
+- protected继承
+- 继承方式的影响
+
+### 3. 派生类的构造和析构
+- 构造函数调用顺序
+- 析构函数调用顺序
+- 基类构造函数的调用
+- 初始化列表
+
+### 4. 成员访问和隐藏
+- 成员函数的重写
+- 名称隐藏
+- 作用域解析
+- using声明
+
+### 5. 多重继承
+- 多重继承的语法
+- 菱形继承问题
+- 虚继承
+- 多重继承的复杂性
+
+## 重点概念和代码示例
+
+### 基本继承
 ```cpp
-class BaseClass {
-    // 基类成员
-};
+#include <iostream>
+#include <string>
+using namespace std;
 
-class DerivedClass : access-specifier BaseClass {
-    // 派生类成员
-};
-```
-
-#### 访问控制符
-- **public继承**：基类的public成员在派生类中仍为public，protected成员仍为protected
-- **protected继承**：基类的public和protected成员在派生类中都变为protected
-- **private继承**：基类的public和protected成员在派生类中都变为private
-
-### 2. 基类与派生类
-```cpp
+// 基类：动物
 class Animal {
-protected:
+protected:  // protected成员可以被派生类访问
     string name;
     int age;
     
 public:
-    Animal(string n, int a) : name(n), age(a) {}
-    
-    void eat() {
-        cout << name << " is eating" << endl;
+    Animal(const string& n, int a) : name(n), age(a) {
+        cout << "Animal构造函数：" << name << endl;
     }
     
-    void sleep() {
-        cout << name << " is sleeping" << endl;
+    virtual ~Animal() {  // 虚析构函数很重要
+        cout << "Animal析构函数：" << name << endl;
     }
     
-    virtual void makeSound() {
-        cout << name << " makes a sound" << endl;
+    // 基类的公共接口
+    void setName(const string& n) { name = n; }
+    string getName() const { return name; }
+    
+    void setAge(int a) { age = a; }
+    int getAge() const { return age; }
+    
+    // 虚函数，可以被派生类重写
+    virtual void makeSound() const {
+        cout << name << " 发出了声音" << endl;
     }
     
-    virtual ~Animal() {}  // 虚析构函数
+    virtual void move() const {
+        cout << name << " 在移动" << endl;
+    }
+    
+    // 普通成员函数
+    void sleep() const {
+        cout << name << " 正在睡觉" << endl;
+    }
+    
+    void displayInfo() const {
+        cout << "动物信息 - 姓名: " << name << ", 年龄: " << age << endl;
+    }
 };
 
-class Dog : public Animal {
+// 派生类：狗
+class Dog : public Animal {  // public继承
 private:
-    string breed;
+    string breed;  // 品种
     
 public:
-    Dog(string n, int a, string b) : Animal(n, a), breed(b) {}
-    
-    void makeSound() override {  // 函数重写
-        cout << name << " barks: Woof!" << endl;
+    // 派生类构造函数必须调用基类构造函数
+    Dog(const string& n, int a, const string& b) 
+        : Animal(n, a), breed(b) {  // 调用基类构造函数
+        cout << "Dog构造函数：" << name << " (" << breed << ")" << endl;
     }
     
-    void wagTail() {
-        cout << name << " is wagging tail" << endl;
+    ~Dog() {
+        cout << "Dog析构函数：" << name << endl;
     }
     
-    void displayInfo() {
-        cout << "Name: " << name << ", Age: " << age << ", Breed: " << breed << endl;
+    // 重写基类的虚函数
+    void makeSound() const override {
+        cout << name << " 汪汪叫" << endl;
+    }
+    
+    void move() const override {
+        cout << name << " 在跑步" << endl;
+    }
+    
+    // 派生类特有的方法
+    void wagTail() const {
+        cout << name << " 摇尾巴" << endl;
+    }
+    
+    void fetch() const {
+        cout << name << " 去捡球" << endl;
+    }
+    
+    string getBreed() const { return breed; }
+    void setBreed(const string& b) { breed = b; }
+    
+    // 重写基类方法，提供更详细的信息
+    void displayInfo() const {
+        Animal::displayInfo();  // 调用基类方法
+        cout << "品种: " << breed << endl;
     }
 };
+
+// 派生类：猫
+class Cat : public Animal {
+private:
+    bool isIndoor;
+    
+public:
+    Cat(const string& n, int a, bool indoor = true) 
+        : Animal(n, a), isIndoor(indoor) {
+        cout << "Cat构造函数：" << name << endl;
+    }
+    
+    ~Cat() {
+        cout << "Cat析构函数：" << name << endl;
+    }
+    
+    void makeSound() const override {
+        cout << name << " 喵喵叫" << endl;
+    }
+    
+    void move() const override {
+        cout << name << " 悄悄地走" << endl;
+    }
+    
+    // 猫特有的行为
+    void purr() const {
+        cout << name << " 发出呼噜声" << endl;
+    }
+    
+    void climb() const {
+        cout << name << " 爬树" << endl;
+    }
+    
+    bool getIsIndoor() const { return isIndoor; }
+    void setIsIndoor(bool indoor) { isIndoor = indoor; }
+    
+    void displayInfo() const {
+        Animal::displayInfo();
+        cout << "类型: " << (isIndoor ? "室内猫" : "室外猫") << endl;
+    }
+};
+
+void inheritanceBasics() {
+    cout << "=== 基本继承演示 ===" << endl;
+    
+    // 创建对象
+    Animal animal("通用动物", 5);
+    Dog dog("旺财", 3, "金毛");
+    Cat cat("咪咪", 2, true);
+    
+    cout << "\n=== 对象信息 ===" << endl;
+    animal.displayInfo();
+    dog.displayInfo();
+    cat.displayInfo();
+    
+    cout << "\n=== 多态行为 ===" << endl;
+    animal.makeSound();
+    dog.makeSound();
+    cat.makeSound();
+    
+    cout << "\n=== 移动行为 ===" << endl;
+    animal.move();
+    dog.move();
+    cat.move();
+    
+    cout << "\n=== 特有行为 ===" << endl;
+    dog.wagTail();
+    dog.fetch();
+    cat.purr();
+    cat.climb();
+    
+    cout << "\n=== 共同行为 ===" << endl;
+    animal.sleep();
+    dog.sleep();  // 继承自基类
+    cat.sleep();  // 继承自基类
+    
+    cout << "\n函数结束，开始析构..." << endl;
+}
 ```
 
-### 3. 派生类的构造与析构
-派生类的构造函数必须调用基类的构造函数，析构函数会自动调用基类的析构函数。
-
+### 继承方式详解
 ```cpp
 class Base {
+private:
+    int privateData;
 protected:
-    int value;
-    
+    int protectedData;
 public:
-    Base(int v) : value(v) {
-        cout << "Base constructor: " << value << endl;
-    }
+    int publicData;
     
-    ~Base() {
-        cout << "Base destructor: " << value << endl;
+    Base() : privateData(1), protectedData(2), publicData(3) {}
+    
+    void showData() const {
+        cout << "Base - private: " << privateData 
+             << ", protected: " << protectedData 
+             << ", public: " << publicData << endl;
     }
 };
 
-class Derived : public Base {
-private:
-    string name;
-    
+// public继承 - 最常用
+class PublicDerived : public Base {
 public:
-    Derived(int v, string n) : Base(v), name(n) {
-        cout << "Derived constructor: " << name << endl;
-    }
-    
-    ~Derived() {
-        cout << "Derived destructor: " << name << endl;
+    void accessMembers() {
+        // privateData;     // 错误！不能访问基类private成员
+        protectedData = 20; // 可以访问基类protected成员
+        publicData = 30;    // 可以访问基类public成员
+        
+        cout << "PublicDerived访问成员" << endl;
     }
 };
+
+// protected继承 - 较少使用
+class ProtectedDerived : protected Base {
+public:
+    void accessMembers() {
+        // privateData;     // 错误！不能访问基类private成员
+        protectedData = 200; // 可以访问
+        publicData = 300;    // 可以访问，但外部访问级别变为protected
+        
+        cout << "ProtectedDerived访问成员" << endl;
+    }
+};
+
+// private继承 - 表示"用...实现"关系
+class PrivateDerived : private Base {
+public:
+    void accessMembers() {
+        // privateData;     // 错误！不能访问基类private成员
+        protectedData = 2000; // 可以访问
+        publicData = 3000;    // 可以访问，但外部访问级别变为private
+        
+        cout << "PrivateDerived访问成员" << endl;
+    }
+    
+    // 如果想要外部访问基类的某些public成员，可以使用using声明
+    using Base::showData;  // 将基类的showData提升为public
+};
+
+void inheritanceModes() {
+    cout << "\n=== 继承方式演示 ===" << endl;
+    
+    PublicDerived pd;
+    ProtectedDerived protd;
+    PrivateDerived privd;
+    
+    cout << "\n访问测试:" << endl;
+    
+    // public继承
+    pd.publicData = 100;     // 可以访问
+    pd.showData();           // 可以访问基类public方法
+    pd.accessMembers();
+    
+    // protected继承
+    // protd.publicData = 200;  // 错误！publicData在派生类中变为protected
+    // protd.showData();        // 错误！showData在派生类中变为protected
+    protd.accessMembers();
+    
+    // private继承
+    // privd.publicData = 300;  // 错误！publicData在派生类中变为private
+    privd.showData();           // 可以访问，因为使用了using声明
+    privd.accessMembers();
+}
 ```
 
-### 4. 函数重写
-派生类可以重写基类的虚函数，实现多态。
-
+### 构造和析构顺序
 ```cpp
-class Shape {
-protected:
-    double x, y;
-    
+class GrandParent {
 public:
-    Shape(double x, double y) : x(x), y(y) {}
-    
-    virtual double area() const = 0;  // 纯虚函数
-    virtual double perimeter() const = 0;  // 纯虚函数
-    virtual void draw() const {
-        cout << "Drawing a shape at (" << x << ", " << y << ")" << endl;
-    }
-    
-    virtual ~Shape() = default;
+    GrandParent() { cout << "1. GrandParent构造函数" << endl; }
+    virtual ~GrandParent() { cout << "6. GrandParent析构函数" << endl; }
 };
 
-class Circle : public Shape {
-private:
-    double radius;
-    
+class Parent : public GrandParent {
 public:
-    Circle(double x, double y, double r) : Shape(x, y), radius(r) {}
-    
-    double area() const override {
-        return 3.14159 * radius * radius;
-    }
-    
-    double perimeter() const override {
-        return 2 * 3.14159 * radius;
-    }
-    
-    void draw() const override {
-        cout << "Drawing a circle at (" << x << ", " << y << ") with radius " << radius << endl;
-    }
-};
-```
-
-### 5. 多重继承
-C++支持多重继承，一个类可以继承多个基类。
-
-```cpp
-class Flyable {
-public:
-    virtual void fly() = 0;
-    virtual ~Flyable() = default;
+    Parent() { cout << "2. Parent构造函数" << endl; }
+    ~Parent() { cout << "5. Parent析构函数" << endl; }
 };
 
-class Swimmable {
+class Child : public Parent {
 public:
-    virtual void swim() = 0;
-    virtual ~Swimmable() = default;
+    Child() { cout << "3. Child构造函数" << endl; }
+    ~Child() { cout << "4. Child析构函数" << endl; }
 };
 
-class Duck : public Animal, public Flyable, public Swimmable {
-public:
-    Duck(string n, int a) : Animal(n, a) {}
+void constructionOrder() {
+    cout << "\n=== 构造析构顺序演示 ===" << endl;
     
-    void makeSound() override {
-        cout << name << " quacks: Quack!" << endl;
-    }
-    
-    void fly() override {
-        cout << name << " is flying" << endl;
-    }
-    
-    void swim() override {
-        cout << name << " is swimming" << endl;
-    }
-};
+    cout << "创建Child对象:" << endl;
+    {
+        Child child;  // 构造顺序：GrandParent -> Parent -> Child
+        cout << "Child对象创建完成" << endl;
+    }  // 析构顺序：Child -> Parent -> GrandParent
+    cout << "Child对象已销毁" << endl;
+}
 ```
 
 ## 实践练习
 
-### 练习1：图形类继承体系
-实现一个完整的图形类继承体系，包括基类和多个派生类。
-
+### 练习1：图形继承体系
 ```cpp
-#include <iostream>
-#include <vector>
 #include <cmath>
-#include <memory>
-using namespace std;
 
-// 基类：图形
+// 抽象基类：形状
 class Shape {
 protected:
     double x, y;  // 位置坐标
+    string color;
     
 public:
-    Shape(double x = 0, double y = 0) : x(x), y(y) {
-        cout << "Shape constructor at (" << x << ", " << y << ")" << endl;
-    }
-    
-    virtual double area() const = 0;  // 纯虚函数
-    virtual double perimeter() const = 0;  // 纯虚函数
-    virtual void draw() const {
-        cout << "Drawing a shape at (" << x << ", " << y << ")" << endl;
-    }
-    
-    virtual void move(double dx, double dy) {
-        x += dx;
-        y += dy;
-        cout << "Shape moved to (" << x << ", " << y << ")" << endl;
+    Shape(double x, double y, const string& c) 
+        : x(x), y(y), color(c) {
+        cout << "Shape构造: (" << x << "," << y << ") " << color << endl;
     }
     
     virtual ~Shape() {
-        cout << "Shape destructor" << endl;
+        cout << "Shape析构: " << color << endl;
+    }
+    
+    // 纯虚函数，派生类必须实现
+    virtual double getArea() const = 0;
+    virtual double getPerimeter() const = 0;
+    virtual void draw() const = 0;
+    
+    // 虚函数，派生类可以重写
+    virtual void move(double dx, double dy) {
+        x += dx;
+        y += dy;
+        cout << color << "形状移动到 (" << x << "," << y << ")" << endl;
+    }
+    
+    // 普通成员函数
+    void setColor(const string& c) { color = c; }
+    string getColor() const { return color; }
+    
+    double getX() const { return x; }
+    double getY() const { return y; }
+    
+    virtual void displayInfo() const {
+        cout << color << "形状位于 (" << x << "," << y << ")" << endl;
     }
 };
 
-// 派生类：圆形
+// 圆形类
 class Circle : public Shape {
 private:
     double radius;
     
 public:
-    Circle(double x, double y, double r) : Shape(x, y), radius(r) {
-        cout << "Circle constructor with radius " << radius << endl;
+    Circle(double x, double y, double r, const string& c = "红色") 
+        : Shape(x, y, c), radius(r) {
+        cout << "Circle构造: 半径=" << radius << endl;
     }
     
-    double area() const override {
+    ~Circle() {
+        cout << "Circle析构: 半径=" << radius << endl;
+    }
+    
+    // 实现纯虚函数
+    double getArea() const override {
         return M_PI * radius * radius;
     }
     
-    double perimeter() const override {
+    double getPerimeter() const override {
         return 2 * M_PI * radius;
     }
     
     void draw() const override {
-        cout << "Drawing a circle at (" << x << ", " << y << ") with radius " << radius << endl;
+        cout << "绘制" << color << "圆形: 中心(" << x << "," << y 
+             << "), 半径=" << radius << endl;
     }
     
+    // 圆形特有的方法
     double getRadius() const { return radius; }
-    void setRadius(double r) { radius = r; }
+    void setRadius(double r) { 
+        if (r > 0) radius = r; 
+    }
     
-    ~Circle() {
-        cout << "Circle destructor" << endl;
+    void displayInfo() const override {
+        Shape::displayInfo();
+        cout << "半径: " << radius << ", 面积: " << getArea() 
+             << ", 周长: " << getPerimeter() << endl;
     }
 };
 
-// 派生类：矩形
+// 矩形类
 class Rectangle : public Shape {
 private:
     double width, height;
     
 public:
-    Rectangle(double x, double y, double w, double h) : Shape(x, y), width(w), height(h) {
-        cout << "Rectangle constructor with width " << width << " and height " << height << endl;
+    Rectangle(double x, double y, double w, double h, const string& c = "蓝色") 
+        : Shape(x, y, c), width(w), height(h) {
+        cout << "Rectangle构造: " << width << "x" << height << endl;
     }
     
-    double area() const override {
+    ~Rectangle() {
+        cout << "Rectangle析构: " << width << "x" << height << endl;
+    }
+    
+    double getArea() const override {
         return width * height;
     }
     
-    double perimeter() const override {
+    double getPerimeter() const override {
         return 2 * (width + height);
     }
     
     void draw() const override {
-        cout << "Drawing a rectangle at (" << x << ", " << y << ") with width " << width << " and height " << height << endl;
+        cout << "绘制" << color << "矩形: 左上角(" << x << "," << y 
+             << "), 大小=" << width << "x" << height << endl;
     }
     
+    // 矩形特有的方法
     double getWidth() const { return width; }
     double getHeight() const { return height; }
-    void setWidth(double w) { width = w; }
-    void setHeight(double h) { height = h; }
     
-    ~Rectangle() {
-        cout << "Rectangle destructor" << endl;
+    void setWidth(double w) { if (w > 0) width = w; }
+    void setHeight(double h) { if (h > 0) height = h; }
+    
+    void displayInfo() const override {
+        Shape::displayInfo();
+        cout << "尺寸: " << width << "x" << height 
+             << ", 面积: " << getArea() 
+             << ", 周长: " << getPerimeter() << endl;
     }
 };
 
-// 派生类：三角形
-class Triangle : public Shape {
-private:
-    double side1, side2, side3;
-    
+// 正方形类（继承自矩形）
+class Square : public Rectangle {
 public:
-    Triangle(double x, double y, double s1, double s2, double s3) 
-        : Shape(x, y), side1(s1), side2(s2), side3(s3) {
-        cout << "Triangle constructor with sides " << side1 << ", " << side2 << ", " << side3 << endl;
+    Square(double x, double y, double side, const string& c = "绿色") 
+        : Rectangle(x, y, side, side, c) {
+        cout << "Square构造: 边长=" << side << endl;
     }
     
-    double area() const override {
-        // 使用海伦公式
-        double s = perimeter() / 2;
-        return sqrt(s * (s - side1) * (s - side2) * (s - side3));
-    }
-    
-    double perimeter() const override {
-        return side1 + side2 + side3;
+    ~Square() {
+        cout << "Square析构" << endl;
     }
     
     void draw() const override {
-        cout << "Drawing a triangle at (" << x << ", " << y << ") with sides " << side1 << ", " << side2 << ", " << side3 << endl;
+        cout << "绘制" << color << "正方形: 左上角(" << x << "," << y 
+             << "), 边长=" << getWidth() << endl;
     }
     
-    double getSide1() const { return side1; }
-    double getSide2() const { return side2; }
-    double getSide3() const { return side3; }
+    // 正方形特有的方法
+    double getSide() const { return getWidth(); }
     
-    ~Triangle() {
-        cout << "Triangle destructor" << endl;
+    void setSide(double side) {
+        setWidth(side);
+        setHeight(side);
+    }
+    
+    void displayInfo() const override {
+        Shape::displayInfo();
+        cout << "边长: " << getSide() 
+             << ", 面积: " << getArea() 
+             << ", 周长: " << getPerimeter() << endl;
     }
 };
 
-// 图形管理器类
-class ShapeManager {
-private:
-    vector<unique_ptr<Shape>> shapes;
+void exercise1() {
+    cout << "\n=== 练习1：图形继承体系 ===" << endl;
     
-public:
-    void addShape(unique_ptr<Shape> shape) {
-        shapes.push_back(std::move(shape));
+    // 创建不同的图形对象
+    Circle circle(0, 0, 5);
+    Rectangle rect(10, 10, 8, 6);
+    Square square(20, 20, 4);
+    
+    cout << "\n=== 图形信息 ===" << endl;
+    circle.displayInfo();
+    rect.displayInfo();
+    square.displayInfo();
+    
+    cout << "\n=== 绘制图形 ===" << endl;
+    circle.draw();
+    rect.draw();
+    square.draw();
+    
+    cout << "\n=== 移动图形 ===" << endl;
+    circle.move(5, 5);
+    rect.move(-2, 3);
+    square.move(1, -1);
+    
+    cout << "\n=== 多态演示 ===" << endl;
+    // 使用基类指针数组
+    Shape* shapes[] = {&circle, &rect, &square};
+    
+    for (int i = 0; i < 3; i++) {
+        cout << "形状 " << (i+1) << ": ";
+        shapes[i]->draw();
+        cout << "面积: " << shapes[i]->getArea() << endl;
     }
     
-    void drawAll() const {
-        cout << "\n=== 绘制所有图形 ===" << endl;
-        for (const auto& shape : shapes) {
-            shape->draw();
-        }
-    }
-    
-    void moveAll(double dx, double dy) {
-        cout << "\n=== 移动所有图形 ===" << endl;
-        for (const auto& shape : shapes) {
-            shape->move(dx, dy);
-        }
-    }
-    
-    double getTotalArea() const {
-        double total = 0;
-        for (const auto& shape : shapes) {
-            total += shape->area();
-        }
-        return total;
-    }
-    
-    double getTotalPerimeter() const {
-        double total = 0;
-        for (const auto& shape : shapes) {
-            total += shape->perimeter();
-        }
-        return total;
-    }
-    
-    void displaySummary() const {
-        cout << "\n=== 图形统计 ===" << endl;
-        cout << "总图形数量: " << shapes.size() << endl;
-        cout << "总面积: " << getTotalArea() << endl;
-        cout << "总周长: " << getTotalPerimeter() << endl;
-    }
-};
+    cout << "\n函数结束，开始析构..." << endl;
+}
 ```
 
-### 练习2：车辆继承体系
-实现一个车辆类的继承体系，演示不同类型的车辆。
+### 练习2：员工管理系统
+```cpp
+#include <vector>
+#include <memory>
+
+// 基类：员工
+class Employee {
+protected:
+    int id;
+    string name;
+    string department;
+    double baseSalary;
+    
+    static int nextId;  // 静态成员用于生成ID
+    
+public:
+    Employee(const string& n, const string& dept, double salary) 
+        : id(++nextId), name(n), department(dept), baseSalary(salary) {
+        cout << "Employee构造: " << name << " (ID: " << id << ")" << endl;
+    }
+    
+    virtual ~Employee() {
+        cout << "Employee析构: " << name << endl;
+    }
+    
+    // 纯虚函数：计算工资
+    virtual double calculateSalary() const = 0;
+    
+    // 虚函数：显示信息
+    virtual void displayInfo() const {
+        cout << "ID: " << id << ", 姓名: " << name 
+             << ", 部门: " << department << ", 基本工资: $" << baseSalary << endl;
+    }
+    
+    // 虚函数：工作描述
+    virtual string getJobDescription() const {
+        return "通用员工工作";
+    }
+    
+    // Getter方法
+    int getId() const { return id; }
+    string getName() const { return name; }
+    string getDepartment() const { return department; }
+    double getBaseSalary() const { return baseSalary; }
+    
+    // Setter方法
+    void setName(const string& n) { name = n; }
+    void setDepartment(const string& dept) { department = dept; }
+    void setBaseSalary(double salary) { 
+        if (salary > 0) baseSalary = salary; 
+    }
+};
+
+int Employee::nextId = 0;
+
+// 全职员工
+class FullTimeEmployee : public Employee {
+private:
+    double bonus;
+    int vacationDays;
+    
+public:
+    FullTimeEmployee(const string& n, const string& dept, double salary, double b = 0) 
+        : Employee(n, dept, salary), bonus(b), vacationDays(20) {
+        cout << "FullTimeEmployee构造: " << name << endl;
+    }
+    
+    ~FullTimeEmployee() {
+        cout << "FullTimeEmployee析构: " << name << endl;
+    }
+    
+    double calculateSalary() const override {
+        return baseSalary + bonus;
+    }
+    
+    void displayInfo() const override {
+        Employee::displayInfo();
+        cout << "类型: 全职员工, 奖金: $" << bonus 
+             << ", 年假: " << vacationDays << "天" << endl;
+        cout << "总工资: $" << calculateSalary() << endl;
+    }
+    
+    string getJobDescription() const override {
+        return "全职员工 - 负责日常运营工作";
+    }
+    
+    // 全职员工特有方法
+    double getBonus() const { return bonus; }
+    void setBonus(double b) { if (b >= 0) bonus = b; }
+    
+    int getVacationDays() const { return vacationDays; }
+    void setVacationDays(int days) { if (days >= 0) vacationDays = days; }
+    
+    void takeVacation(int days) {
+        if (days <= vacationDays) {
+            vacationDays -= days;
+            cout << name << " 请假 " << days << " 天，剩余年假: " << vacationDays << " 天" << endl;
+        } else {
+            cout << name << " 年假不足，无法请假 " << days << " 天" << endl;
+        }
+    }
+};
+
+// 兼职员工
+class PartTimeEmployee : public Employee {
+private:
+    double hourlyRate;
+    int hoursWorked;
+    
+public:
+    PartTimeEmployee(const string& n, const string& dept, double rate) 
+        : Employee(n, dept, 0), hourlyRate(rate), hoursWorked(0) {
+        cout << "PartTimeEmployee构造: " << name << endl;
+    }
+    
+    ~PartTimeEmployee() {
+        cout << "PartTimeEmployee析构: " << name << endl;
+    }
+    
+    double calculateSalary() const override {
+        return hourlyRate * hoursWorked;
+    }
+    
+    void displayInfo() const override {
+        Employee::displayInfo();
+        cout << "类型: 兼职员工, 时薪: $" << hourlyRate 
+             << ", 工作时长: " << hoursWorked << "小时" << endl;
+        cout << "总工资: $" << calculateSalary() << endl;
+    }
+    
+    string getJobDescription() const override {
+        return "兼职员工 - 按小时计费的灵活工作";
+    }
+    
+    // 兼职员工特有方法
+    double getHourlyRate() const { return hourlyRate; }
+    void setHourlyRate(double rate) { if (rate > 0) hourlyRate = rate; }
+    
+    int getHoursWorked() const { return hoursWorked; }
+    void addWorkHours(int hours) { 
+        if (hours > 0) hoursWorked += hours; 
+    }
+    void resetWorkHours() { hoursWorked = 0; }
+};
+
+// 经理（继承自全职员工）
+class Manager : public FullTimeEmployee {
+private:
+    vector<Employee*> subordinates;
+    double managementBonus;
+    
+public:
+    Manager(const string& n, const string& dept, double salary, double mgmtBonus) 
+        : FullTimeEmployee(n, dept, salary), managementBonus(mgmtBonus) {
+        cout << "Manager构造: " << name << endl;
+    }
+    
+    ~Manager() {
+        cout << "Manager析构: " << name << endl;
+    }
+    
+    double calculateSalary() const override {
+        double teamBonus = subordinates.size() * 500;  // 每个下属500奖金
+        return FullTimeEmployee::calculateSalary() + managementBonus + teamBonus;
+    }
+    
+    void displayInfo() const override {
+        Employee::displayInfo();
+        cout << "类型: 经理, 管理奖金: $" << managementBonus 
+             << ", 团队人数: " << subordinates.size() << endl;
+        cout << "总工资: $" << calculateSalary() << endl;
+    }
+    
+    string getJobDescription() const override {
+        return "经理 - 负责团队管理和项目协调";
+    }
+    
+    // 经理特有方法
+    void addSubordinate(Employee* emp) {
+        subordinates.push_back(emp);
+        cout << name << " 现在管理 " << emp->getName() << endl;
+    }
+    
+    void removeSubordinate(Employee* emp) {
+        auto it = find(subordinates.begin(), subordinates.end(), emp);
+        if (it != subordinates.end()) {
+            subordinates.erase(it);
+            cout << name << " 不再管理 " << emp->getName() << endl;
+        }
+    }
+    
+    vector<Employee*> getSubordinates() const {
+        return subordinates;
+    }
+    
+    void holdTeamMeeting() {
+        cout << name << " 召开团队会议，参与人员:" << endl;
+        for (const auto& emp : subordinates) {
+            cout << "  - " << emp->getName() << endl;
+        }
+    }
+};
+
+void exercise2() {
+    cout << "\n=== 练习2：员工管理系统 ===" << endl;
+    
+    // 创建不同类型的员工
+    FullTimeEmployee ft1("张三", "开发部", 8000, 1000);
+    FullTimeEmployee ft2("李四", "测试部", 7000, 800);
+    PartTimeEmployee pt1("王五", "设计部", 50);  // 时薪50
+    PartTimeEmployee pt2("赵六", "市场部", 45);  // 时薪45
+    Manager mgr("陈经理", "技术部", 12000, 2000);
+    
+    cout << "\n=== 员工信息 ===" << endl;
+    ft1.displayInfo();
+    cout << endl;
+    
+    ft2.displayInfo();
+    cout << endl;
+    
+    // 兼职员工工作记录
+    pt1.addWorkHours(80);
+    pt1.displayInfo();
+    cout << endl;
+    
+    pt2.addWorkHours(60);
+    pt2.displayInfo();
+    cout << endl;
+    
+    // 经理管理团队
+    mgr.addSubordinate(&ft1);
+    mgr.addSubordinate(&ft2);
+    mgr.addSubordinate(&pt1);
+    mgr.displayInfo();
+    cout << endl;
+    
+    cout << "\n=== 工作场景 ===" << endl;
+    // 请假
+    ft1.takeVacation(5);
+    
+    // 团队会议
+    mgr.holdTeamMeeting();
+    
+    // 多态演示
+    cout << "\n=== 多态演示 ===" << endl;
+    vector<Employee*> employees = {&ft1, &ft2, &pt1, &pt2, &mgr};
+    
+    double totalPayroll = 0;
+    for (const auto& emp : employees) {
+        cout << emp->getName() << ": " << emp->getJobDescription() << endl;
+        totalPayroll += emp->calculateSalary();
+    }
+    
+    cout << "\n总工资支出: $" << totalPayroll << endl;
+    
+    cout << "\n函数结束，开始析构..." << endl;
+}
+```
+
+### 练习3：多重继承示例
+```cpp
+// 多重继承示例：飞行器
+class Flyable {
+public:
+    virtual ~Flyable() = default;
+    virtual void fly() const = 0;
+    virtual double getMaxAltitude() const = 0;
+};
+
+class Swimmable {
+public:
+    virtual ~Swimmable() = default;
+    virtual void swim() const = 0;
+    virtual double getMaxDepth() const = 0;
+};
+
+// 基础载具类
+class Vehicle {
+protected:
+    string name;
+    double speed;
+    
+public:
+    Vehicle(const string& n, double s) : name(n), speed(s) {
+        cout << "Vehicle构造: " << name << endl;
+    }
+    
+    virtual ~Vehicle() {
+        cout << "Vehicle析构: " << name << endl;
+    }
+    
+    virtual void move() const {
+        cout << name << " 以 " << speed << " km/h 的速度移动" << endl;
+    }
+    
+    string getName() const { return name; }
+    double getSpeed() const { return speed; }
+};
+
+// 鸭子 - 多重继承示例
+class Duck : public Vehicle, public Flyable, public Swimmable {
+private:
+    bool isWild;
+    
+public:
+    Duck(const string& n, bool wild = true) 
+        : Vehicle(n, 50), isWild(wild) {
+        cout << "Duck构造: " << name << (isWild ? " (野鸭)" : " (家鸭)") << endl;
+    }
+    
+    ~Duck() {
+        cout << "Duck析构: " << name << endl;
+    }
+    
+    // 实现Flyable接口
+    void fly() const override {
+        cout << name << " 振翅飞翔" << endl;
+    }
+    
+    double getMaxAltitude() const override {
+        return isWild ? 3000.0 : 100.0;  // 野鸭飞得更高
+    }
+    
+    // 实现Swimmable接口
+    void swim() const override {
+        cout << name << " 在水中游泳" << endl;
+    }
+    
+    double getMaxDepth() const override {
+        return 5.0;  // 鸭子潜水深度有限
+    }
+    
+    // 重写Vehicle的move方法
+    void move() const override {
+        cout << name << " 可以走路、游泳和飞行" << endl;
+    }
+    
+    // 鸭子特有行为
+    void quack() const {
+        cout << name << " 嘎嘎叫" << endl;
+    }
+    
+    bool getIsWild() const { return isWild; }
+};
+
+// 潜水艇 - 只能游泳
+class Submarine : public Vehicle, public Swimmable {
+private:
+    int crewSize;
+    
+public:
+    Submarine(const string& n, int crew) 
+        : Vehicle(n, 30), crewSize(crew) {
+        cout << "Submarine构造: " << name << " (船员: " << crewSize << ")" << endl;
+    }
+    
+    ~Submarine() {
+        cout << "Submarine析构: " << name << endl;
+    }
+    
+    void swim() const override {
+        cout << name << " 在水下潜行" << endl;
+    }
+    
+    double getMaxDepth() const override {
+        return 200.0;  // 潜水艇可以潜得很深
+    }
+    
+    void move() const override {
+        cout << name << " 在水中以 " << speed << " km/h 的速度航行" << endl;
+    }
+    
+    void dive() const {
+        cout << name << " 开始下潜" << endl;
+    }
+    
+    void surface() const {
+        cout << name << " 上浮到水面" << endl;
+    }
+    
+    int getCrewSize() const { return crewSize; }
+};
+
+void exercise3() {
+    cout << "\n=== 练习3：多重继承示例 ===" << endl;
+    
+    Duck duck("唐老鸭", false);
+    Submarine sub("海狼号", 50);
+    
+    cout << "\n=== 基本信息 ===" << endl;
+    cout << duck.getName() << " - 速度: " << duck.getSpeed() << " km/h" << endl;
+    cout << sub.getName() << " - 速度: " << sub.getSpeed() << " km/h, 船员: " << sub.getCrewSize() << endl;
+    
+    cout << "\n=== 移动能力 ===" << endl;
+    duck.move();
+    sub.move();
+    
+    cout << "\n=== 飞行能力 ===" << endl;
+    duck.fly();
+    cout << duck.getName() << " 最大飞行高度: " << duck.getMaxAltitude() << " 米" << endl;
+    
+    cout << "\n=== 游泳能力 ===" << endl;
+    duck.swim();
+    cout << duck.getName() << " 最大潜水深度: " << duck.getMaxDepth() << " 米" << endl;
+    
+    sub.swim();
+    cout << sub.getName() << " 最大潜水深度: " << sub.getMaxDepth() << " 米" << endl;
+    
+    cout << "\n=== 特有行为 ===" << endl;
+    duck.quack();
+    sub.dive();
+    sub.surface();
+    
+    cout << "\n=== 多态演示 ===" << endl;
+    // 使用接口指针
+    Flyable* flyer = &duck;
+    flyer->fly();
+    
+    Swimmable* swimmers[] = {&duck, &sub};
+    for (int i = 0; i < 2; i++) {
+        swimmers[i]->swim();
+        cout << "最大深度: " << swimmers[i]->getMaxDepth() << " 米" << endl;
+    }
+    
+    cout << "\n函数结束，开始析构..." << endl;
+}
+```
+
+## 学习检查点
+
+- [ ] 理解继承的基本概念和is-a关系
+- [ ] 掌握三种继承方式的区别和使用场景
+- [ ] 了解派生类的构造和析构顺序
+- [ ] 能够正确重写基类的虚函数
+- [ ] 理解成员访问权限在继承中的变化
+- [ ] 掌握多重继承的语法和注意事项
+- [ ] 能够设计合理的类继承体系
+- [ ] 理解继承在多态中的作用
+
+## 完整示例程序
 
 ```cpp
 #include <iostream>
 #include <string>
 #include <vector>
+#include <memory>
+#include <algorithm>
+#include <cmath>
 using namespace std;
 
-// 基类：车辆
-class Vehicle {
-protected:
-    string brand;
-    string model;
-    int year;
-    double price;
+int main() {
+    cout << "=== C++ 继承学习 ===" << endl;
     
-public:
-    Vehicle(string b, string m, int y, double p) 
-        : brand(b), model(m), year(y), price(p) {
-        cout << "Vehicle constructor: " << brand << " " << model << endl;
+    try {
+        // 运行所有示例和练习
+        inheritanceBasics();
+        inheritanceModes();
+        constructionOrder();
+        
+        exercise1();
+        exercise2();
+        exercise3();
+        
+    } catch (const exception& e) {
+        cout << "程序异常: " << e.what() << endl;
     }
     
-    virtual void start() {
-        cout << brand << " " << model << " is starting..." << endl;
-    }
-    
-    virtual void stop() {
-        cout << brand << " " << model << " is stopping..." << endl;
-    }
-    
-    virtual void displayInfo() const {
-        cout << "Brand: " << brand << ", Model: " << model 
-             << ", Year: " << year << ", Price: $" << price << endl;
-    }
-    
-    virtual double calculateTax() const {
-        return price * 0.1;  // 10% 税率
-    }
-    
-    virtual ~Vehicle() {
-        cout << "Vehicle destructor: " << brand << " " << model << endl;
-    }
-};
-
-// 派生类：汽车
-class Car : public Vehicle {
-private:
-    int doors;
-    string fuelType;
-    
-public:
-    Car(string b, string m, int y, double p, int d, string f) 
-        : Vehicle(b, m, y, p), doors(d), fuelType(f) {
-        cout << "Car constructor: " << doors << " doors, " << fuelType << " fuel" << endl;
-    }
-    
-    void start() override {
-        cout << brand << " " << model << " car is starting with key..." << endl;
-    }
-    
-    void displayInfo() const override {
-        Vehicle::displayInfo();
-        cout << "Doors: " << doors << ", Fuel Type: " << fuelType << endl;
-    }
-    
-    double calculateTax() const override {
-        return price * 0.12;  // 汽车税率12%
-    }
-    
-    void openTrunk() {
-        cout << brand << " " << model << " trunk is opened" << endl;
-    }
-    
-    ~Car() {
-        cout << "Car destructor" << endl;
-    }
-};
-
-// 派生类：摩托车
-class Motorcycle : public Vehicle {
-private:
-    string engineType;
-    bool hasWindshield;
-    
-public:
-    Motorcycle(string b, string m, int y, double p, string e, bool w) 
-        : Vehicle(b, m, y, p), engineType(e), hasWindshield(w) {
-        cout << "Motorcycle constructor: " << engineType << " engine" << endl;
-    }
-    
-    void start() override {
-        cout << brand << " " << model << " motorcycle is starting with kick..." << endl;
-    }
-    
-    void displayInfo() const override {
-        Vehicle::displayInfo();
-        cout << "Engine Type: " << engineType << ", Windshield: " 
-             << (hasWindshield ? "Yes" : "No") << endl;
-    }
-    
-    double calculateTax() const override {
-        return price * 0.08;  // 摩托车税率8%
-    }
-    
-    void wheelie() {
-        cout << brand << " " << model << " is doing a wheelie!" << endl;
-    }
-    
-    ~Motorcycle() {
-        cout << "Motorcycle destructor" << endl;
-    }
-};
-
-// 派生类：卡车
-class Truck : public Vehicle {
-private:
-    double cargoCapacity;
-    int axles;
-    
-public:
-    Truck(string b, string m, int y, double p, double c, int a) 
-        : Vehicle(b, m, y, p), cargoCapacity(c), axles(a) {
-        cout << "Truck constructor: " << cargoCapacity << " tons capacity, " << axles << " axles" << endl;
-    }
-    
-    void start() override {
-        cout << brand << " " << model << " truck is starting with air brakes..." << endl;
-    }
-    
-    void displayInfo() const override {
-        Vehicle::displayInfo();
-        cout << "Cargo Capacity: " << cargoCapacity << " tons, Axles: " << axles << endl;
-    }
-    
-    double calculateTax() const override {
-        return price * 0.15;  // 卡车税率15%
-    }
-    
-    void loadCargo(double weight) {
-        if (weight <= cargoCapacity) {
-            cout << brand << " " << model << " loaded " << weight << " tons of cargo" << endl;
-        } else {
-            cout << "Cargo weight exceeds capacity!" << endl;
-        }
-    }
-    
-    ~Truck() {
-        cout << "Truck destructor" << endl;
-    }
-};
-
-// 车辆展示类
-class VehicleShowroom {
-private:
-    vector<unique_ptr<Vehicle>> vehicles;
-    
-public:
-    void addVehicle(unique_ptr<Vehicle> vehicle) {
-        vehicles.push_back(std::move(vehicle));
-    }
-    
-    void displayAllVehicles() const {
-        cout << "\n=== 车辆展示 ===" << endl;
-        for (const auto& vehicle : vehicles) {
-            vehicle->displayInfo();
-            cout << "Tax: $" << vehicle->calculateTax() << endl;
-            cout << "---" << endl;
-        }
-    }
-    
-    void testAllVehicles() {
-        cout << "\n=== 车辆测试 ===" << endl;
-        for (const auto& vehicle : vehicles) {
-            vehicle->start();
-            vehicle->stop();
-            cout << "---" << endl;
-        }
-    }
-    
-    double getTotalValue() const {
-        double total = 0;
-        for (const auto& vehicle : vehicles) {
-            total += vehicle->calculateTax();
-        }
-        return total;
-    }
-};
+    cout << "\n程序结束" << endl;
+    return 0;
+}
 ```
 
-## 算法题练习
-
-### 1. 二叉搜索树的最近公共祖先 (Medium)
-**题目链接**: https://leetcode.cn/problems/lowest-common-ancestor-of-a-binary-search-tree/
-
-给定一个二叉搜索树, 找到该树中两个指定节点的最近公共祖先。
-
-**关键点**：
-- 理解二叉搜索树的性质
-- 最近公共祖先的概念
-- 递归和迭代两种解法
-
-### 2. 删除二叉搜索树中的节点 (Medium)
-**题目链接**: https://leetcode.cn/problems/delete-node-in-a-bst/
-
-给定一个二叉搜索树的根节点 root 和一个值 key，删除二叉搜索树中的 key 对应的节点，并保证二叉搜索树的性质不变。
-
-**关键点**：
-- 二叉搜索树的删除操作
-- 三种情况的处理
-- 递归实现
-
-### 3. 验证二叉搜索树 (Medium)
-**题目链接**: https://leetcode.cn/problems/validate-binary-search-tree/
-
-给定一个二叉树，判断其是否是一个有效的二叉搜索树。
-
-**关键点**：
-- 二叉搜索树的性质
-- 中序遍历验证
-- 递归边界处理
-
-### 4. 二叉搜索树中的插入操作 (Medium)
-**题目链接**: https://leetcode.cn/problems/insert-into-a-binary-search-tree/
-
-给定二叉搜索树（BST）的根节点和要插入树中的值，将值插入二叉搜索树。
-
-**关键点**：
-- 二叉搜索树的插入规则
-- 递归和迭代实现
-- 保持BST性质
-
-## 学习要点总结
-
-### 1. 继承的设计原则
-- **is-a关系**：派生类应该是基类的特化
-- **里氏替换原则**：派生类对象应该能够替换基类对象
-- **单一职责**：每个类应该有明确的职责
-
-### 2. 访问控制的重要性
-- **public继承**：表示is-a关系
-- **protected继承**：表示implemented-in-terms-of关系
-- **private继承**：表示implemented-in-terms-of关系
-
-### 3. 虚函数和纯虚函数
-- **虚函数**：可以被重写，提供默认实现
-- **纯虚函数**：必须被重写，定义抽象接口
-- **抽象类**：包含纯虚函数的类，不能实例化
-
-### 4. 虚析构函数的重要性
-- **基类析构函数应该是虚函数**
-- **确保正确的析构顺序**
-- **避免内存泄漏**
-
-## 扩展练习
-
-1. 实现一个动物类的继承体系
-2. 设计一个员工管理系统的继承层次
-3. 实现一个游戏角色的继承体系
-4. 设计一个文件系统的继承结构
-
-## 学习检查
-
-完成今天的学习后，你应该能够：
-- [ ] 理解继承的基本概念
-- [ ] 掌握派生类的构造和析构
-- [ ] 会设计合理的继承层次
-- [ ] 理解函数重写的机制
-- [ ] 掌握虚析构函数的使用
-- [ ] 完成4道算法题
-
-记住：继承是代码复用的重要手段，但不要过度使用。优先考虑组合而不是继承！
+[返回第二周](/plan/week2/) | [上一天：构造函数与析构函数](/plan/week2/day9/) | [下一天：虚函数与多态](/plan/week2/day11/)

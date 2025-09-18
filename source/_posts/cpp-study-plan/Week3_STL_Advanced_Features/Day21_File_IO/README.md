@@ -1,9 +1,24 @@
-# 第21天：文件操作与IO复习
+﻿---
+title: C++ 学习计划 - 第三周第21天:文件操作与IO
+date: 2025-09-16 21:00:00
+categories: Cpp
+tags:
+    - C++ 
+    - Study Plan
+    - Week3
+    - File IO
+    - Streams
+layout: page
+menu_id: plan
+permalink: /plan/week3/day21/
+---
+
+# 第21天：文件操作与IO
 
 ## 学习目标
 掌握C++的文件操作和IO流，理解文本文件与二进制文件的处理，学会使用字符串流和错误处理。
 
-## 学习内容
+## 核心知识点
 
 ### 1. 文件流概述
 
@@ -12,12 +27,23 @@ C++提供了多种文件流类来处理文件操作：
 - `ofstream`：输出文件流（写入文件）
 - `fstream`：文件流（读写文件）
 
+#### 头文件包含
+```cpp
+#include <fstream>   // 文件流
+#include <iostream>  // 标准输入输出流
+#include <sstream>   // 字符串流
+```
+
+#### 参考资料
+- [C++ 输入输出库 - cppreference.com](https://en.cppreference.com/w/cpp/io)
+- [文件流详解 - cppreference.com](https://en.cppreference.com/w/cpp/io/basic_fstream)
+
 ### 2. 基本文件操作
 
 #### 文件写入
 ```cpp
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <string>
 
 void fileWritingExample() {
@@ -44,10 +70,6 @@ void fileWritingExample() {
 
 #### 文件读取
 ```cpp
-#include <iostream>
-#include <fstream>
-#include <string>
-
 void fileReadingExample() {
     // 创建输入文件流
     std::ifstream inFile("example.txt");
@@ -69,10 +91,6 @@ void fileReadingExample() {
 
 #### 文件读写
 ```cpp
-#include <iostream>
-#include <fstream>
-#include <string>
-
 void fileReadWriteExample() {
     // 创建文件流（读写模式）
     std::fstream file("data.txt", std::ios::in | std::ios::out | std::ios::trunc);
@@ -99,42 +117,41 @@ void fileReadWriteExample() {
 }
 ```
 
+#### 参考资料
+- [std::ofstream - cppreference.com](https://en.cppreference.com/w/cpp/io/basic_ofstream)
+- [std::ifstream - cppreference.com](https://en.cppreference.com/w/cpp/io/basic_ifstream)
+- [C++ 文件操作详解](https://blog.csdn.net/weixin_43914604/article/details/105300000)
+
 ### 3. 文件模式
 
+#### 常用文件模式
 ```cpp
-#include <iostream>
-#include <fstream>
+// 不同的文件打开模式
+std::ofstream out1("file1.txt", std::ios::out);           // 输出模式
+std::ofstream out2("file2.txt", std::ios::out | std::ios::app);  // 追加模式
+std::ofstream out3("file3.txt", std::ios::out | std::ios::trunc); // 截断模式
 
-void fileModeExample() {
-    // 不同的文件打开模式
-    std::ofstream out1("file1.txt", std::ios::out);           // 输出模式
-    std::ofstream out2("file2.txt", std::ios::out | std::ios::app);  // 追加模式
-    std::ofstream out3("file3.txt", std::ios::out | std::ios::trunc); // 截断模式
-    
-    std::ifstream in1("file1.txt", std::ios::in);             // 输入模式
-    std::ifstream in2("file1.txt", std::ios::in | std::ios::binary); // 二进制模式
-    
-    std::fstream file("file4.txt", std::ios::in | std::ios::out | std::ios::app); // 读写追加模式
-    
-    // 检查文件是否打开
-    if (out1.is_open()) {
-        out1 << "文件1内容" << std::endl;
-        out1.close();
-    }
-    
-    if (out2.is_open()) {
-        out2 << "文件2内容" << std::endl;
-        out2.close();
-    }
-}
+std::ifstream in1("file1.txt", std::ios::in);             // 输入模式
+std::ifstream in2("file1.txt", std::ios::in | std::ios::binary); // 二进制模式
+
+std::fstream file("file4.txt", std::ios::in | std::ios::out | std::ios::app); // 读写追加模式
 ```
+
+#### 文件模式说明
+- `std::ios::in`：读取模式
+- `std::ios::out`：写入模式
+- `std::ios::app`：追加模式
+- `std::ios::trunc`：截断模式（清空文件）
+- `std::ios::binary`：二进制模式
+- `std::ios::ate`：打开时定位到文件末尾
+
+#### 参考资料
+- [文件打开模式 - cppreference.com](https://en.cppreference.com/w/cpp/io/ios_base/openmode)
 
 ### 4. 二进制文件操作
 
 #### 二进制写入
 ```cpp
-#include <iostream>
-#include <fstream>
 #include <vector>
 
 struct Person {
@@ -166,10 +183,6 @@ void binaryWritingExample() {
 
 #### 二进制读取
 ```cpp
-#include <iostream>
-#include <fstream>
-#include <vector>
-
 void binaryReadingExample() {
     std::ifstream inFile("people.bin", std::ios::binary);
     
@@ -200,13 +213,13 @@ void binaryReadingExample() {
 }
 ```
 
+#### 参考资料
+- [二进制文件操作详解](https://www.learncpp.com/cpp-tutorial/file-handling-and-fstream/)
+
 ### 5. 文件定位
 
+#### 文件指针操作
 ```cpp
-#include <iostream>
-#include <fstream>
-#include <string>
-
 void filePositioningExample() {
     std::fstream file("position.txt", std::ios::in | std::ios::out | std::ios::trunc);
     
@@ -241,13 +254,21 @@ void filePositioningExample() {
 }
 ```
 
+#### 定位函数说明
+- `tellg()`：获取读指针位置
+- `tellp()`：获取写指针位置
+- `seekg(pos)`：设置读指针位置
+- `seekp(pos)`：设置写指针位置
+- `seekg(offset, dir)`：相对定位
+
+#### 参考资料
+- [文件定位操作 - cppreference.com](https://en.cppreference.com/w/cpp/io/basic_istream/seekg)
+
 ### 6. 字符串流
 
 #### std::stringstream
 ```cpp
-#include <iostream>
 #include <sstream>
-#include <string>
 
 void stringStreamExample() {
     // 字符串到数字的转换
@@ -274,10 +295,6 @@ void stringStreamExample() {
 
 #### std::istringstream 和 std::ostringstream
 ```cpp
-#include <iostream>
-#include <sstream>
-#include <string>
-
 void specializedStringStreamExample() {
     // 输入字符串流
     std::string input = "Hello World 123 45.67";
@@ -302,13 +319,14 @@ void specializedStringStreamExample() {
 }
 ```
 
+#### 参考资料
+- [std::stringstream - cppreference.com](https://en.cppreference.com/w/cpp/io/basic_stringstream)
+- [字符串流详解](https://blog.csdn.net/weixin_43914604/article/details/105301000)
+
 ### 7. 错误处理
 
+#### 文件状态检查
 ```cpp
-#include <iostream>
-#include <fstream>
-#include <string>
-
 void errorHandlingExample() {
     std::ifstream file("nonexistent.txt");
     
@@ -340,17 +358,35 @@ void errorHandlingExample() {
 }
 ```
 
+#### 异常处理
+```cpp
+void exceptionHandlingExample() {
+    try {
+        std::ifstream file("data.txt");
+        file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+        
+        std::string line;
+        while (std::getline(file, line)) {
+            std::cout << line << std::endl;
+        }
+    } catch (const std::ifstream::failure& e) {
+        std::cout << "文件操作异常: " << e.what() << std::endl;
+    }
+}
+```
+
+#### 参考资料
+- [IO错误处理 - cppreference.com](https://en.cppreference.com/w/cpp/io/ios_base/iostate)
+
 ### 8. 文件管理器类
 
+#### 实用文件操作工具
 ```cpp
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <vector>
-#include <filesystem>
+#include <filesystem>  // C++17
 
 class FileManager {
 public:
+    // 复制文件
     static bool copyFile(const std::string& source, const std::string& destination) {
         std::ifstream src(source, std::ios::binary);
         std::ofstream dst(destination, std::ios::binary);
@@ -363,6 +399,7 @@ public:
         return true;
     }
     
+    // 移动文件
     static bool moveFile(const std::string& source, const std::string& destination) {
         if (copyFile(source, destination)) {
             return std::remove(source.c_str()) == 0;
@@ -370,6 +407,7 @@ public:
         return false;
     }
     
+    // 读取所有行
     static std::vector<std::string> readLines(const std::string& filename) {
         std::vector<std::string> lines;
         std::ifstream file(filename);
@@ -385,6 +423,7 @@ public:
         return lines;
     }
     
+    // 写入所有行
     static void writeLines(const std::string& filename, const std::vector<std::string>& lines) {
         std::ofstream file(filename);
         
@@ -396,6 +435,7 @@ public:
         }
     }
     
+    // 获取文件大小
     static size_t getFileSize(const std::string& filename) {
         std::ifstream file(filename, std::ios::binary | std::ios::ate);
         if (file.is_open()) {
@@ -404,354 +444,102 @@ public:
         return 0;
     }
     
+    // 检查文件是否存在
     static bool fileExists(const std::string& filename) {
         std::ifstream file(filename);
         return file.good();
     }
-};
-
-void fileManagerExample() {
-    // 写入测试文件
-    std::vector<std::string> lines = {"Line 1", "Line 2", "Line 3"};
-    FileManager::writeLines("test.txt", lines);
     
-    // 读取文件
-    auto readLines = FileManager::readLines("test.txt");
-    std::cout << "读取的行数: " << readLines.size() << std::endl;
-    
-    // 检查文件是否存在
-    if (FileManager::fileExists("test.txt")) {
-        std::cout << "文件存在" << std::endl;
-        std::cout << "文件大小: " << FileManager::getFileSize("test.txt") << " 字节" << std::endl;
+    // C++17 filesystem版本
+    static bool fileExistsModern(const std::string& filename) {
+        return std::filesystem::exists(filename);
     }
     
-    // 复制文件
-    if (FileManager::copyFile("test.txt", "test_copy.txt")) {
-        std::cout << "文件复制成功" << std::endl;
-    }
-}
-```
-
-## 实践练习
-
-### 练习1：日志系统
-```cpp
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <chrono>
-#include <mutex>
-
-class Logger {
-private:
-    std::ofstream logFile;
-    std::mutex mtx;
-    
-public:
-    Logger(const std::string& filename) {
-        logFile.open(filename, std::ios::app);
-    }
-    
-    ~Logger() {
-        if (logFile.is_open()) {
-            logFile.close();
-        }
-    }
-    
-    void log(const std::string& level, const std::string& message) {
-        std::lock_guard<std::mutex> lock(mtx);
-        
-        if (logFile.is_open()) {
-            auto now = std::chrono::system_clock::now();
-            auto time_t = std::chrono::system_clock::to_time_t(now);
-            
-            logFile << "[" << std::put_time(std::localtime(&time_t), "%Y-%m-%d %H:%M:%S") << "] "
-                    << "[" << level << "] " << message << std::endl;
-            logFile.flush();
-        }
-    }
-    
-    void info(const std::string& message) {
-        log("INFO", message);
-    }
-    
-    void warning(const std::string& message) {
-        log("WARNING", message);
-    }
-    
-    void error(const std::string& message) {
-        log("ERROR", message);
+    static size_t getFileSizeModern(const std::string& filename) {
+        return std::filesystem::file_size(filename);
     }
 };
-
-void loggerExample() {
-    Logger logger("app.log");
-    
-    logger.info("应用程序启动");
-    logger.warning("这是一个警告消息");
-    logger.error("这是一个错误消息");
-    logger.info("应用程序结束");
-}
 ```
 
-### 练习2：配置文件解析器
-```cpp
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <map>
-#include <sstream>
+#### 参考资料
+- [C++17 filesystem - cppreference.com](https://en.cppreference.com/w/cpp/filesystem)
+- [文件系统库详解](https://blog.csdn.net/weixin_43914604/article/details/105302000)
 
-class ConfigParser {
-private:
-    std::map<std::string, std::string> config;
+### 9. 高级IO操作
+
+#### 格式化输出
+```cpp
+#include <iomanip>
+
+void formattedOutputExample() {
+    std::ofstream file("formatted.txt");
     
-public:
-    bool loadFromFile(const std::string& filename) {
-        std::ifstream file(filename);
-        if (!file.is_open()) {
-            return false;
-        }
+    if (file.is_open()) {
+        double pi = 3.14159265359;
+        int number = 42;
         
-        std::string line;
-        while (std::getline(file, line)) {
-            // 跳过空行和注释
-            if (line.empty() || line[0] == '#') {
-                continue;
-            }
-            
-            // 查找等号
-            size_t pos = line.find('=');
-            if (pos != std::string::npos) {
-                std::string key = line.substr(0, pos);
-                std::string value = line.substr(pos + 1);
-                
-                // 去除空格
-                key.erase(0, key.find_first_not_of(" \t"));
-                key.erase(key.find_last_not_of(" \t") + 1);
-                value.erase(0, value.find_first_not_of(" \t"));
-                value.erase(value.find_last_not_of(" \t") + 1);
-                
-                config[key] = value;
-            }
-        }
+        // 设置精度
+        file << std::fixed << std::setprecision(2) << pi << std::endl;
+        
+        // 设置宽度和对齐
+        file << std::setw(10) << std::left << "Name" 
+             << std::setw(5) << std::right << "Age" << std::endl;
+        
+        file << std::setw(10) << std::left << "Alice" 
+             << std::setw(5) << std::right << 25 << std::endl;
+        
+        // 十六进制输出
+        file << "Hex: " << std::hex << number << std::endl;
         
         file.close();
-        return true;
-    }
-    
-    std::string getString(const std::string& key, const std::string& defaultValue = "") const {
-        auto it = config.find(key);
-        return it != config.end() ? it->second : defaultValue;
-    }
-    
-    int getInt(const std::string& key, int defaultValue = 0) const {
-        auto it = config.find(key);
-        if (it != config.end()) {
-            std::istringstream iss(it->second);
-            int value;
-            if (iss >> value) {
-                return value;
-            }
-        }
-        return defaultValue;
-    }
-    
-    double getDouble(const std::string& key, double defaultValue = 0.0) const {
-        auto it = config.find(key);
-        if (it != config.end()) {
-            std::istringstream iss(it->second);
-            double value;
-            if (iss >> value) {
-                return value;
-            }
-        }
-        return defaultValue;
-    }
-    
-    bool getBool(const std::string& key, bool defaultValue = false) const {
-        auto it = config.find(key);
-        if (it != config.end()) {
-            std::string value = it->second;
-            std::transform(value.begin(), value.end(), value.begin(), ::tolower);
-            return value == "true" || value == "1" || value == "yes";
-        }
-        return defaultValue;
-    }
-    
-    void printAll() const {
-        for (const auto& pair : config) {
-            std::cout << pair.first << " = " << pair.second << std::endl;
-        }
-    }
-};
-
-void configParserExample() {
-    // 创建配置文件
-    std::ofstream configFile("config.txt");
-    configFile << "# 应用程序配置\n";
-    configFile << "app_name = MyApp\n";
-    configFile << "version = 1.0.0\n";
-    configFile << "debug = true\n";
-    configFile << "max_connections = 100\n";
-    configFile << "timeout = 30.5\n";
-    configFile.close();
-    
-    // 解析配置文件
-    ConfigParser parser;
-    if (parser.loadFromFile("config.txt")) {
-        std::cout << "配置加载成功:" << std::endl;
-        parser.printAll();
-        
-        std::cout << "\n特定配置:" << std::endl;
-        std::cout << "应用名称: " << parser.getString("app_name") << std::endl;
-        std::cout << "版本: " << parser.getString("version") << std::endl;
-        std::cout << "调试模式: " << (parser.getBool("debug") ? "开启" : "关闭") << std::endl;
-        std::cout << "最大连接数: " << parser.getInt("max_connections") << std::endl;
-        std::cout << "超时时间: " << parser.getDouble("timeout") << std::endl;
-    } else {
-        std::cout << "配置加载失败" << std::endl;
     }
 }
 ```
 
-### 练习3：数据序列化
+#### 自定义分隔符
 ```cpp
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <vector>
-#include <sstream>
-
-class DataSerializer {
-public:
-    // 序列化到文件
-    static bool serializeToFile(const std::string& filename, const std::vector<std::string>& data) {
-        std::ofstream file(filename, std::ios::binary);
-        if (!file.is_open()) {
-            return false;
-        }
-        
-        // 写入数据数量
-        size_t count = data.size();
-        file.write(reinterpret_cast<const char*>(&count), sizeof(count));
-        
-        // 写入每个字符串
-        for (const auto& str : data) {
-            size_t length = str.length();
-            file.write(reinterpret_cast<const char*>(&length), sizeof(length));
-            file.write(str.c_str(), length);
-        }
-        
-        file.close();
-        return true;
-    }
+void customDelimiterExample() {
+    std::string data = "apple,banana,cherry,date";
+    std::stringstream ss(data);
+    std::string item;
     
-    // 从文件反序列化
-    static bool deserializeFromFile(const std::string& filename, std::vector<std::string>& data) {
-        std::ifstream file(filename, std::ios::binary);
-        if (!file.is_open()) {
-            return false;
-        }
-        
-        // 读取数据数量
-        size_t count;
-        file.read(reinterpret_cast<char*>(&count), sizeof(count));
-        
-        data.clear();
-        data.reserve(count);
-        
-        // 读取每个字符串
-        for (size_t i = 0; i < count; ++i) {
-            size_t length;
-            file.read(reinterpret_cast<char*>(&length), sizeof(length));
-            
-            std::string str(length, '\0');
-            file.read(&str[0], length);
-            
-            data.push_back(str);
-        }
-        
-        file.close();
-        return true;
-    }
-    
-    // 序列化到字符串
-    static std::string serializeToString(const std::vector<std::string>& data) {
-        std::ostringstream oss;
-        
-        oss << data.size() << "\n";
-        for (const auto& str : data) {
-            oss << str.length() << " " << str << "\n";
-        }
-        
-        return oss.str();
-    }
-    
-    // 从字符串反序列化
-    static bool deserializeFromString(const std::string& str, std::vector<std::string>& data) {
-        std::istringstream iss(str);
-        
-        size_t count;
-        if (!(iss >> count)) {
-            return false;
-        }
-        
-        data.clear();
-        data.reserve(count);
-        
-        for (size_t i = 0; i < count; ++i) {
-            size_t length;
-            if (!(iss >> length)) {
-                return false;
-            }
-            
-            std::string item(length, '\0');
-            iss.read(&item[0], length);
-            data.push_back(item);
-        }
-        
-        return true;
-    }
-};
-
-void dataSerializerExample() {
-    // 测试数据
-    std::vector<std::string> originalData = {
-        "Hello, World!",
-        "C++ Programming",
-        "File I/O Operations",
-        "Data Serialization"
-    };
-    
-    // 序列化到文件
-    if (DataSerializer::serializeToFile("data.bin", originalData)) {
-        std::cout << "数据序列化到文件成功" << std::endl;
-    }
-    
-    // 从文件反序列化
-    std::vector<std::string> loadedData;
-    if (DataSerializer::deserializeFromFile("data.bin", loadedData)) {
-        std::cout << "从文件反序列化成功:" << std::endl;
-        for (const auto& str : loadedData) {
-            std::cout << "  " << str << std::endl;
-        }
-    }
-    
-    // 序列化到字符串
-    std::string serialized = DataSerializer::serializeToString(originalData);
-    std::cout << "\n序列化字符串: " << serialized << std::endl;
-    
-    // 从字符串反序列化
-    std::vector<std::string> deserializedData;
-    if (DataSerializer::deserializeFromString(serialized, deserializedData)) {
-        std::cout << "从字符串反序列化成功:" << std::endl;
-        for (const auto& str : deserializedData) {
-            std::cout << "  " << str << std::endl;
-        }
+    // 使用自定义分隔符读取
+    while (std::getline(ss, item, ',')) {
+        std::cout << "Item: " << item << std::endl;
     }
 }
 ```
+
+#### 参考资料
+- [IO操纵符 - cppreference.com](https://en.cppreference.com/w/cpp/io/manip)
+
+## 实用教程和文档
+
+### 官方文档
+- [C++ 输入输出库 - cppreference.com](https://en.cppreference.com/w/cpp/io)
+- [文件流操作 - cppreference.com](https://en.cppreference.com/w/cpp/io/basic_fstream)
+
+### 优质教程
+- [C++ 文件操作完全指南](https://blog.csdn.net/weixin_43914604/article/details/105300000)
+- [文件IO最佳实践](https://www.learncpp.com/cpp-tutorial/file-handling-and-fstream/)
+- [现代C++文件操作](https://changkun.de/modern-cpp/zh-cn/06-regex/)
+
+### 实战案例
+- [日志系统实现](https://github.com/gabime/spdlog)
+- [配置文件解析](https://github.com/nlohmann/json)
+
+## 今日练习
+
+### 基础练习
+1. 实现一个日志系统，支持不同级别的日志记录
+2. 编写一个配置文件解析器，支持键值对格式
+3. 实现一个数据序列化系统，支持二进制和文本格式
+
+### 算法题推荐
+1. [LeetCode 68. Text Justification](https://leetcode.com/problems/text-justification/) - 文本对齐，涉及字符串处理
+2. [LeetCode 151. Reverse Words in a String](https://leetcode.com/problems/reverse-words-in-a-string/) - 字符串处理
+3. [LeetCode 165. Compare Version Numbers](https://leetcode.com/problems/compare-version-numbers/) - 版本号比较
+4. [LeetCode 273. Integer to English Words](https://leetcode.com/problems/integer-to-english-words/) - 数字转英文单词
 
 ## 学习要点总结
 
@@ -761,13 +549,17 @@ void dataSerializerExample() {
 4. **字符串流**：掌握stringstream的使用
 5. **错误处理**：学会处理文件操作错误
 
-## 今日算法题
+## 第三周总结
 
-完成以下4道LeetCode题目，巩固文件操作的使用：
+经过第三周的学习，你已经掌握了：
+- **STL容器**：vector、list、map等容器的使用
+- **STL算法**：查找、排序、修改等算法的应用
+- **智能指针**：现代C++的内存管理技术
+- **Lambda表达式**：函数式编程的基础
+- **移动语义**：性能优化的重要技术
+- **并发编程**：多线程和异步编程基础
+- **文件IO**：文件操作和流处理技术
 
-1. [LeetCode 68. Text Justification](https://leetcode.com/problems/text-justification/) - 文本对齐，涉及字符串处理
-2. [LeetCode 151. Reverse Words in a String](https://leetcode.com/problems/reverse-words-in-a-string/) - 字符串处理
-3. [LeetCode 165. Compare Version Numbers](https://leetcode.com/problems/compare-version-numbers/) - 版本号比较
-4. [LeetCode 273. Integer to English Words](https://leetcode.com/problems/integer-to-english-words/) - 数字转英文单词
+这些都是现代C++开发中的核心技术，为你进入第四周的高级主题和项目实战打下了坚实基础。
 
-每道题目都涉及字符串处理和文本操作，是很好的实践机会！
+[上一天：并发编程基础](/plan/week3/day20/) | [返回第三周总览](/plan/week3/) | [下一周：高级主题与实战](/plan/week4/)

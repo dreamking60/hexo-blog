@@ -1,3 +1,17 @@
+﻿---
+title: C++ 学习计划 - 第2天:函数与作用域
+date: 2025-09-16 10:12:00
+categories: Cpp
+tags:
+    - C++ 
+    - Study Plan
+    - Week1
+    - Day2
+layout: page
+menu_id: plan
+permalink: /plan/week1/day2/
+---
+
 # 第2天：函数与作用域
 
 ## 学习目标
@@ -210,3 +224,5 @@ void counter() {
 - C++ Primer 第6章：函数
 - Effective C++ 条款20-25：函数设计
 - 了解函数指针和函数对象的概念
+
+[返回第一周](/plan/week1/) | [上一天：变量与数据类型](/plan/week1/day1/) | [下一天：数组与字符串](/plan/week1/day3/)

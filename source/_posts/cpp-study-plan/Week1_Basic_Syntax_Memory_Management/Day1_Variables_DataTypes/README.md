@@ -1,3 +1,17 @@
+﻿---
+title: C++ 学习计划 - 第1天:变量、数据类型与基本语法
+date: 2025-09-16 10:11:00
+categories: Cpp
+tags:
+    - C++ 
+    - Study Plan
+    - Week1
+    - Day1
+layout: page
+menu_id: plan
+permalink: /plan/week1/day1/
+---
+
 # 第1天：变量、数据类型与基本语法
 
 ## 学习目标
@@ -108,3 +122,5 @@ constexpr int BUFFER_SIZE = 1024;  // 编译时常量
 - C++ Primer 第2章：变量和基本类型
 - cppreference.com 数据类型页面
 - 了解不同编译器和平台上的数据类型大小差异
+
+[返回第一周](/plan/week1/) | [下一天：函数与作用域](/plan/week1/day2/)

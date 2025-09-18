@@ -1,12 +1,51 @@
+﻿---
+title: C++ 学习计划 - 第26天:C++20新特性
+date: 2025-09-16 10:29:00
+categories: Cpp
+tags:
+    - C++ 
+    - Study Plan
+    - Week4
+    - Day26
+layout: page
+menu_id: plan
+permalink: /plan/week4/day26/
+---
+
 # 第26天：C++20新特性
 
 ## 学习目标
-掌握C++20的核心新特性，学会使用概念、协程、模块、范围等现代C++特性来编写更安全、更高效的代码。
+了解和掌握C++20标准引入的重要新特性，学会使用最新的现代C++特性来编写更安全、更高效、更易维护的代码。
 
-## 今日学习内容
+## 学习资源链接
+
+### 📚 官方文档和教程
+- [C++20 Reference](https://en.cppreference.com/w/cpp/20) - C++20官方参考文档
+- [C++20 Features](https://www.modernescpp.com/index.php/c-20-core-language) - C++20核心特性介绍
+- [C++20 in Detail](https://leanpub.com/cpp20indetail) - C++20详细指南
+- [ISO C++20 Standard](https://www.iso.org/standard/79358.html) - C++20标准文档
+
+### 🎥 视频教程
+- [C++20 Overview](https://www.youtube.com/watch?v=FRkJCvHWdwQ) - C++20特性概览
+- [CppCon C++20 Talks](https://www.youtube.com/results?search_query=cppcon+c%2B%2B20) - CppCon C++20演讲
+- [C++20 Concepts](https://www.youtube.com/watch?v=HddFGPTAmtU) - C++20概念详解
+- [C++20 Coroutines](https://www.youtube.com/watch?v=_fu0gx-xseY) - C++20协程教程
+
+### 📖 深入阅读
+- [C++20 Recipes](https://www.amazon.com/C-20-Recipes-Problem-Solution-Approach/dp/1484257871) - C++20实战指南
+- [Beginning C++20](https://www.amazon.com/Beginning-C-20-Introduction-Professional-Programming/dp/1484258835) - C++20入门
+- [Professional C++](https://www.amazon.com/Professional-C-Marc-Gregoire/dp/1119695406) - 专业C++编程(包含C++20)
+
+### 🔧 编译器支持
+- [GCC C++20 Support](https://gcc.gnu.org/projects/cxx-status.html#cxx20) - GCC对C++20的支持
+- [Clang C++20 Support](https://clang.llvm.org/cxx_status.html#cxx20) - Clang对C++20的支持
+- [MSVC C++20 Support](https://docs.microsoft.com/en-us/cpp/overview/visual-cpp-language-conformance) - MSVC对C++20的支持
+
+## 学习内容
 
 ### 1. 概念 (Concepts)
-**概念：** 为模板参数提供编译时约束，提高模板代码的可读性和错误信息质量。
+
+概念是C++20引入的重要特性，用于约束模板参数，提供更好的错误信息和更清晰的接口。
 
 ```cpp
 #include <concepts>
@@ -24,214 +63,149 @@ concept FloatingPoint = std::is_floating_point_v<T>;
 template<typename T>
 concept Arithmetic = Integral<T> || FloatingPoint<T>;
 
+// 使用概念约束函数模板
+template<Arithmetic T>
+T add(T a, T b) {
+    return a + b;
+}
+
 // 更复杂的概念
 template<typename T>
+concept Printable = requires(T t) {
+    std::cout << t; // 要求类型T可以输出到cout
+};
+
+template<typename T>
 concept Container = requires(T t) {
+    typename T::value_type;
+    typename T::iterator;
     t.begin();
     t.end();
     t.size();
-    typename T::value_type;
 };
 
 template<typename T>
-concept Sortable = requires(T a, T b) {
-    { a < b } -> std::convertible_to<bool>;
-    { a > b } -> std::convertible_to<bool>;
-    { a == b } -> std::convertible_to<bool>;
+concept Sortable = Container<T> && requires(T t) {
+    std::sort(t.begin(), t.end());
 };
 
-// 使用概念约束函数模板
-template<Arithmetic T>
-T multiply(T a, T b) {
-    return a * b;
-}
+// 自定义概念示例
+template<typename T>
+concept Drawable = requires(T obj, int x, int y) {
+    obj.draw();
+    obj.move(x, y);
+    { obj.getPosition() } -> std::convertible_to<std::pair<int, int>>;
+};
 
-template<Container C>
-void printContainer(const C& container) {
-    std::cout << "Container with " << container.size() << " elements: ";
-    for (const auto& item : container) {
-        std::cout << item << " ";
-    }
-    std::cout << std::endl;
-}
-
-// 概念与类模板
-template<Sortable T>
-class SortedVector {
-private:
-    std::vector<T> data;
-    
+class Circle {
 public:
-    void insert(const T& value) {
-        auto it = std::lower_bound(data.begin(), data.end(), value);
-        data.insert(it, value);
+    void draw() const {
+        std::cout << "Drawing circle at (" << x_ << ", " << y_ << ")\n";
     }
     
-    bool contains(const T& value) const {
-        return std::binary_search(data.begin(), data.end(), value);
+    void move(int x, int y) {
+        x_ = x;
+        y_ = y;
     }
     
-    const std::vector<T>& getData() const { return data; }
+    std::pair<int, int> getPosition() const {
+        return {x_, y_};
+    }
+    
+private:
+    int x_ = 0, y_ = 0;
 };
+
+template<Drawable T>
+void render(const T& shape) {
+    shape.draw();
+}
 
 // 概念的组合和特化
 template<typename T>
-concept SignedIntegral = Integral<T> && std::is_signed_v<T>;
+concept Number = Integral<T> || FloatingPoint<T>;
 
-template<typename T>
-concept UnsignedIntegral = Integral<T> && std::is_unsigned_v<T>;
-
-template<SignedIntegral T>
-T abs_value(T x) {
-    return x < 0 ? -x : x;
+template<Number T>
+constexpr T abs(T value) {
+    if constexpr (std::is_signed_v<T>) {
+        return value < 0 ? -value : value;
+    } else {
+        return value;
+    }
 }
 
-template<UnsignedIntegral T>
-T abs_value(T x) {
-    return x;  // 无符号数总是非负的
-}
-
-void conceptExamples() {
-    // 使用概念约束的函数
-    std::cout << multiply(5, 3) << std::endl;        // int
-    std::cout << multiply(2.5, 4.0) << std::endl;   // double
+void concepts_examples() {
+    // 基本使用
+    std::cout << add(5, 3) << std::endl;        // OK: int
+    std::cout << add(2.5, 1.5) << std::endl;   // OK: double
+    // add("hello", "world");                   // 编译错误：不满足Arithmetic概念
     
     // 容器概念
-    std::vector<int> vec{1, 2, 3, 4, 5};
-    printContainer(vec);
+    std::vector<int> vec = {3, 1, 4, 1, 5};
+    static_assert(Container<decltype(vec)>);
+    static_assert(Sortable<decltype(vec)>);
     
-    // 排序容器
-    SortedVector<int> sortedVec;
-    sortedVec.insert(5);
-    sortedVec.insert(2);
-    sortedVec.insert(8);
-    sortedVec.insert(1);
+    // 图形对象
+    Circle circle;
+    render(circle);
     
-    printContainer(sortedVec.getData());
-    
-    // 概念特化
-    std::cout << "abs(-5) = " << abs_value(-5) << std::endl;
-    std::cout << "abs(5u) = " << abs_value(5u) << std::endl;
+    // 数值概念
+    std::cout << "abs(-5) = " << abs(-5) << std::endl;
+    std::cout << "abs(3.14) = " << abs(-3.14) << std::endl;
 }
 ```
 
-### 2. 范围 (Ranges)
-**概念：** 提供更直观、更安全的容器操作方式，支持函数式编程风格。
+### 2. 协程 (Coroutines)
 
-```cpp
-#include <ranges>
-#include <vector>
-#include <algorithm>
-#include <iostream>
-
-namespace ranges = std::ranges;
-namespace views = std::views;
-
-void rangesExamples() {
-    std::vector<int> numbers{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-    
-    // 1. 基本范围操作
-    std::cout << "Original: ";
-    ranges::copy(numbers, std::ostream_iterator<int>(std::cout, " "));
-    std::cout << std::endl;
-    
-    // 2. 视图组合（惰性求值）
-    auto evenSquares = numbers 
-        | views::filter([](int n) { return n % 2 == 0; })  // 过滤偶数
-        | views::transform([](int n) { return n * n; });   // 平方
-    
-    std::cout << "Even squares: ";
-    ranges::copy(evenSquares, std::ostream_iterator<int>(std::cout, " "));
-    std::cout << std::endl;
-    
-    // 3. 更复杂的管道操作
-    auto result = numbers
-        | views::take(5)                                    // 取前5个
-        | views::reverse                                    // 反转
-        | views::transform([](int n) { return n * 2; });   // 乘以2
-    
-    std::cout << "Complex pipeline: ";
-    ranges::copy(result, std::ostream_iterator<int>(std::cout, " "));
-    std::cout << std::endl;
-    
-    // 4. 范围算法
-    std::vector<std::string> words{"hello", "world", "cpp", "ranges"};
-    
-    // 排序
-    ranges::sort(words);
-    std::cout << "Sorted words: ";
-    ranges::copy(words, std::ostream_iterator<std::string>(std::cout, " "));
-    std::cout << std::endl;
-    
-    // 查找
-    auto it = ranges::find(words, "cpp");
-    if (it != words.end()) {
-        std::cout << "Found: " << *it << std::endl;
-    }
-    
-    // 计数
-    auto count = ranges::count_if(words, [](const std::string& s) {
-        return s.length() > 3;
-    });
-    std::cout << "Words longer than 3 chars: " << count << std::endl;
-    
-    // 5. 自定义范围
-    auto fibonacci = views::iota(0)  // 无限序列
-        | views::transform([](int n) {
-            static std::vector<long long> fib{0, 1};
-            while (fib.size() <= n) {
-                fib.push_back(fib[fib.size()-1] + fib[fib.size()-2]);
-            }
-            return fib[n];
-        })
-        | views::take(10);  // 只取前10个
-    
-    std::cout << "Fibonacci: ";
-    ranges::copy(fibonacci, std::ostream_iterator<long long>(std::cout, " "));
-    std::cout << std::endl;
-}
-
-// 自定义范围适配器
-template<ranges::range R>
-class ChunkView : public ranges::view_interface<ChunkView<R>> {
-private:
-    R base_;
-    std::size_t chunk_size_;
-    
-public:
-    ChunkView(R base, std::size_t chunk_size) 
-        : base_(std::move(base)), chunk_size_(chunk_size) {}
-    
-    auto begin() { return iterator(ranges::begin(base_), chunk_size_); }
-    auto end() { return ranges::end(base_); }
-    
-private:
-    class iterator {
-        ranges::iterator_t<R> current_;
-        std::size_t chunk_size_;
-        
-    public:
-        iterator(ranges::iterator_t<R> current, std::size_t chunk_size)
-            : current_(current), chunk_size_(chunk_size) {}
-        
-        // 实现迭代器接口...
-    };
-};
-```
-
-### 3. 协程 (Coroutines)
-**概念：** 支持协作式多任务，简化异步编程。
+协程提供了一种编写异步代码的新方式，使得异步编程更加直观和易于理解。
 
 ```cpp
 #include <coroutine>
 #include <iostream>
-#include <vector>
+#include <thread>
+#include <chrono>
 #include <optional>
 
-// 简单的生成器协程
+// 简单的协程返回类型
+struct Task {
+    struct promise_type {
+        Task get_return_object() {
+            return Task{std::coroutine_handle<promise_type>::from_promise(*this)};
+        }
+        
+        std::suspend_never initial_suspend() { return {}; }
+        std::suspend_never final_suspend() noexcept { return {}; }
+        
+        void return_void() {}
+        void unhandled_exception() {}
+    };
+    
+    std::coroutine_handle<promise_type> coro;
+    
+    Task(std::coroutine_handle<promise_type> h) : coro(h) {}
+    ~Task() {
+        if (coro) coro.destroy();
+    }
+    
+    // 禁止拷贝，允许移动
+    Task(const Task&) = delete;
+    Task& operator=(const Task&) = delete;
+    Task(Task&& other) noexcept : coro(other.coro) {
+        other.coro = {};
+    }
+    Task& operator=(Task&& other) noexcept {
+        if (this != &other) {
+            if (coro) coro.destroy();
+            coro = other.coro;
+            other.coro = {};
+        }
+        return *this;
+    }
+};
+
+// 生成器协程
 template<typename T>
-class Generator {
-public:
+struct Generator {
     struct promise_type {
         T current_value;
         
@@ -254,79 +228,45 @@ public:
     std::coroutine_handle<promise_type> coro;
     
     Generator(std::coroutine_handle<promise_type> h) : coro(h) {}
-    
     ~Generator() {
-        if (coro) {
-            coro.destroy();
-        }
+        if (coro) coro.destroy();
     }
     
-    // 移动构造和赋值
+    // 禁止拷贝，允许移动
+    Generator(const Generator&) = delete;
+    Generator& operator=(const Generator&) = delete;
     Generator(Generator&& other) noexcept : coro(other.coro) {
         other.coro = {};
     }
-    
     Generator& operator=(Generator&& other) noexcept {
         if (this != &other) {
-            if (coro) {
-                coro.destroy();
-            }
+            if (coro) coro.destroy();
             coro = other.coro;
             other.coro = {};
         }
         return *this;
     }
     
-    // 禁止拷贝
-    Generator(const Generator&) = delete;
-    Generator& operator=(const Generator&) = delete;
-    
-    // 迭代器接口
-    class iterator {
-        std::coroutine_handle<promise_type> coro_;
-        
-    public:
-        iterator(std::coroutine_handle<promise_type> coro) : coro_(coro) {}
-        
-        iterator& operator++() {
-            coro_.resume();
-            if (coro_.done()) {
-                coro_ = {};
-            }
-            return *this;
-        }
-        
-        T operator*() const {
-            return coro_.promise().current_value;
-        }
-        
-        bool operator==(const iterator& other) const {
-            return coro_ == other.coro_;
-        }
-        
-        bool operator!=(const iterator& other) const {
-            return !(*this == other);
-        }
-    };
-    
-    iterator begin() {
-        if (coro) {
-            coro.resume();
-            if (coro.done()) {
-                return iterator{};
-            }
-        }
-        return iterator{coro};
+    bool next() {
+        coro.resume();
+        return !coro.done();
     }
     
-    iterator end() {
-        return iterator{};
+    T value() {
+        return coro.promise().current_value;
     }
 };
 
-// 使用协程生成斐波那契数列
-Generator<long long> fibonacci() {
-    long long a = 0, b = 1;
+// 简单协程示例
+Task simple_coroutine() {
+    std::cout << "Coroutine started\n";
+    co_await std::suspend_always{};
+    std::cout << "Coroutine resumed\n";
+}
+
+// 生成器协程示例
+Generator<int> fibonacci() {
+    int a = 0, b = 1;
     while (true) {
         co_yield a;
         auto temp = a;
@@ -335,59 +275,381 @@ Generator<long long> fibonacci() {
     }
 }
 
-// 使用协程生成素数
-Generator<int> primes() {
-    std::vector<int> known_primes;
-    int candidate = 2;
-    
-    while (true) {
-        bool is_prime = true;
-        for (int prime : known_primes) {
-            if (prime * prime > candidate) break;
-            if (candidate % prime == 0) {
-                is_prime = false;
-                break;
-            }
-        }
-        
-        if (is_prime) {
-            known_primes.push_back(candidate);
-            co_yield candidate;
-        }
-        
-        candidate++;
+Generator<int> range(int start, int end) {
+    for (int i = start; i < end; ++i) {
+        co_yield i;
     }
 }
 
-void coroutineExamples() {
-    // 斐波那契数列
-    std::cout << "First 10 Fibonacci numbers: ";
+// 异步任务协程
+struct AsyncTask {
+    struct promise_type {
+        std::optional<int> result;
+        
+        AsyncTask get_return_object() {
+            return AsyncTask{std::coroutine_handle<promise_type>::from_promise(*this)};
+        }
+        
+        std::suspend_never initial_suspend() { return {}; }
+        std::suspend_always final_suspend() noexcept { return {}; }
+        
+        void return_value(int value) {
+            result = value;
+        }
+        
+        void unhandled_exception() {}
+    };
+    
+    std::coroutine_handle<promise_type> coro;
+    
+    AsyncTask(std::coroutine_handle<promise_type> h) : coro(h) {}
+    ~AsyncTask() {
+        if (coro) coro.destroy();
+    }
+    
+    bool is_ready() const {
+        return coro.done();
+    }
+    
+    int get_result() {
+        return coro.promise().result.value_or(0);
+    }
+};
+
+AsyncTask async_computation(int n) {
+    std::cout << "Starting async computation for " << n << std::endl;
+    
+    // 模拟异步工作
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    
+    int result = n * n;
+    std::cout << "Computation completed: " << result << std::endl;
+    
+    co_return result;
+}
+
+void coroutines_examples() {
+    // 1. 简单协程
+    auto task = simple_coroutine();
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    
+    // 2. 生成器协程
+    std::cout << "\nFibonacci sequence:\n";
     auto fib = fibonacci();
-    auto it = fib.begin();
-    for (int i = 0; i < 10; ++i, ++it) {
-        std::cout << *it << " ";
+    for (int i = 0; i < 10 && fib.next(); ++i) {
+        std::cout << fib.value() << " ";
     }
     std::cout << std::endl;
     
-    // 素数生成
-    std::cout << "First 10 primes: ";
-    auto prime_gen = primes();
-    auto prime_it = prime_gen.begin();
-    for (int i = 0; i < 10; ++i, ++prime_it) {
-        std::cout << *prime_it << " ";
+    std::cout << "\nRange 5-10:\n";
+    auto r = range(5, 10);
+    while (r.next()) {
+        std::cout << r.value() << " ";
+    }
+    std::cout << std::endl;
+    
+    // 3. 异步任务
+    std::cout << "\nAsync computation:\n";
+    auto async_task = async_computation(7);
+    
+    // 等待完成
+    while (!async_task.is_ready()) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+    
+    std::cout << "Final result: " << async_task.get_result() << std::endl;
+}
+```
+
+### 3. 模块 (Modules)
+
+模块是C++20引入的新的代码组织方式，用于替代传统的头文件包含机制。
+
+```cpp
+// math_module.cpp - 模块实现文件
+export module math_utils;
+
+import <iostream>;
+import <cmath>;
+
+// 导出函数
+export namespace math_utils {
+    double add(double a, double b) {
+        return a + b;
+    }
+    
+    double multiply(double a, double b) {
+        return a * b;
+    }
+    
+    double power(double base, double exp) {
+        return std::pow(base, exp);
+    }
+    
+    // 导出类
+    export class Calculator {
+    private:
+        double memory = 0.0;
+        
+    public:
+        void store(double value) {
+            memory = value;
+        }
+        
+        double recall() const {
+            return memory;
+        }
+        
+        double calculate(double a, double b, char op) {
+            switch (op) {
+                case '+': return add(a, b);
+                case '*': return multiply(a, b);
+                case '^': return power(a, b);
+                default: return 0.0;
+            }
+        }
+    };
+}
+
+// 内部实现（不导出）
+namespace {
+    void internal_function() {
+        std::cout << "This is internal to the module\n";
+    }
+}
+```
+
+```cpp
+// string_module.cpp - 另一个模块示例
+export module string_utils;
+
+import <string>;
+import <vector>;
+import <algorithm>;
+import <sstream>;
+
+export namespace string_utils {
+    // 字符串分割
+    std::vector<std::string> split(const std::string& str, char delimiter) {
+        std::vector<std::string> tokens;
+        std::stringstream ss(str);
+        std::string token;
+        
+        while (std::getline(ss, token, delimiter)) {
+            tokens.push_back(token);
+        }
+        
+        return tokens;
+    }
+    
+    // 字符串连接
+    std::string join(const std::vector<std::string>& strings, const std::string& separator) {
+        if (strings.empty()) return "";
+        
+        std::string result = strings[0];
+        for (size_t i = 1; i < strings.size(); ++i) {
+            result += separator + strings[i];
+        }
+        
+        return result;
+    }
+    
+    // 字符串转换
+    std::string to_upper(const std::string& str) {
+        std::string result = str;
+        std::transform(result.begin(), result.end(), result.begin(), ::toupper);
+        return result;
+    }
+    
+    std::string to_lower(const std::string& str) {
+        std::string result = str;
+        std::transform(result.begin(), result.end(), result.begin(), ::tolower);
+        return result;
+    }
+}
+```
+
+```cpp
+// main.cpp - 使用模块
+import math_utils;
+import string_utils;
+import <iostream>;
+import <vector>;
+
+int main() {
+    // 使用数学模块
+    std::cout << "Math operations:\n";
+    std::cout << "2 + 3 = " << math_utils::add(2, 3) << std::endl;
+    std::cout << "4 * 5 = " << math_utils::multiply(4, 5) << std::endl;
+    std::cout << "2^8 = " << math_utils::power(2, 8) << std::endl;
+    
+    math_utils::Calculator calc;
+    calc.store(100);
+    std::cout << "Calculator memory: " << calc.recall() << std::endl;
+    
+    // 使用字符串模块
+    std::cout << "\nString operations:\n";
+    std::string text = "hello,world,cpp20";
+    auto parts = string_utils::split(text, ',');
+    
+    std::cout << "Split result: ";
+    for (const auto& part : parts) {
+        std::cout << "[" << part << "] ";
+    }
+    std::cout << std::endl;
+    
+    std::string joined = string_utils::join(parts, " | ");
+    std::cout << "Joined: " << joined << std::endl;
+    
+    std::cout << "Uppercase: " << string_utils::to_upper(joined) << std::endl;
+    std::cout << "Lowercase: " << string_utils::to_lower(joined) << std::endl;
+    
+    return 0;
+}
+```
+
+### 4. 范围 (Ranges)
+
+C++20引入了ranges库，提供了更强大和易用的算法和视图。
+
+```cpp
+#include <ranges>
+#include <vector>
+#include <iostream>
+#include <algorithm>
+#include <string>
+
+namespace ranges = std::ranges;
+namespace views = std::views;
+
+void ranges_examples() {
+    // 1. 基本范围操作
+    std::vector<int> numbers = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    
+    // 使用ranges算法
+    std::cout << "Original: ";
+    ranges::copy(numbers, std::ostream_iterator<int>(std::cout, " "));
+    std::cout << std::endl;
+    
+    // 查找
+    auto it = ranges::find(numbers, 5);
+    if (it != numbers.end()) {
+        std::cout << "Found 5 at position " << std::distance(numbers.begin(), it) << std::endl;
+    }
+    
+    // 2. 视图 (Views) - 惰性求值
+    std::cout << "\nViews examples:\n";
+    
+    // 过滤偶数
+    auto even_numbers = numbers | views::filter([](int n) { return n % 2 == 0; });
+    std::cout << "Even numbers: ";
+    for (int n : even_numbers) {
+        std::cout << n << " ";
+    }
+    std::cout << std::endl;
+    
+    // 变换（映射）
+    auto squared = numbers | views::transform([](int n) { return n * n; });
+    std::cout << "Squared: ";
+    for (int n : squared) {
+        std::cout << n << " ";
+    }
+    std::cout << std::endl;
+    
+    // 组合视图
+    auto even_squares = numbers 
+                       | views::filter([](int n) { return n % 2 == 0; })
+                       | views::transform([](int n) { return n * n; });
+    
+    std::cout << "Even squares: ";
+    for (int n : even_squares) {
+        std::cout << n << " ";
+    }
+    std::cout << std::endl;
+    
+    // 3. 取前N个元素
+    auto first_five = numbers | views::take(5);
+    std::cout << "First 5: ";
+    ranges::copy(first_five, std::ostream_iterator<int>(std::cout, " "));
+    std::cout << std::endl;
+    
+    // 4. 跳过前N个元素
+    auto skip_three = numbers | views::drop(3);
+    std::cout << "Skip first 3: ";
+    ranges::copy(skip_three, std::ostream_iterator<int>(std::cout, " "));
+    std::cout << std::endl;
+    
+    // 5. 反转视图
+    auto reversed = numbers | views::reverse;
+    std::cout << "Reversed: ";
+    ranges::copy(reversed, std::ostream_iterator<int>(std::cout, " "));
+    std::cout << std::endl;
+    
+    // 6. 字符串处理
+    std::string text = "Hello World C++20";
+    
+    // 分割字符串视图
+    auto words = text | views::split(' ');
+    std::cout << "\nWords in text:\n";
+    for (const auto& word : words) {
+        std::cout << "- ";
+        ranges::copy(word, std::ostream_iterator<char>(std::cout));
+        std::cout << std::endl;
+    }
+    
+    // 7. 生成范围
+    auto iota_range = views::iota(1, 11); // 1到10
+    std::cout << "Iota 1-10: ";
+    ranges::copy(iota_range, std::ostream_iterator<int>(std::cout, " "));
+    std::cout << std::endl;
+    
+    // 8. 复杂的范围操作
+    std::vector<std::string> words_vec = {"apple", "banana", "cherry", "date", "elderberry"};
+    
+    auto long_words_upper = words_vec
+                           | views::filter([](const std::string& s) { return s.length() > 5; })
+                           | views::transform([](const std::string& s) {
+                               std::string upper = s;
+                               ranges::transform(upper, upper.begin(), ::toupper);
+                               return upper;
+                           });
+    
+    std::cout << "Long words (uppercase): ";
+    for (const auto& word : long_words_upper) {
+        std::cout << word << " ";
     }
     std::cout << std::endl;
 }
 ```
 
-### 4. 三路比较运算符 (Spaceship Operator)
-**概念：** `<=>`运算符，简化比较操作的实现。
+### 5. 三路比较运算符 (Spaceship Operator <=>)
+
+三路比较运算符简化了比较操作的实现，可以自动生成所有比较运算符。
 
 ```cpp
 #include <compare>
 #include <iostream>
 #include <string>
 
+// 基本使用
+struct Point {
+    int x, y;
+    
+    // 默认三路比较
+    auto operator<=>(const Point&) const = default;
+    
+    // 如果需要自定义比较逻辑
+    /*
+    std::strong_ordering operator<=>(const Point& other) const {
+        if (auto cmp = x <=> other.x; cmp != 0) {
+            return cmp;
+        }
+        return y <=> other.y;
+    }
+    */
+};
+
+// 更复杂的示例
 class Person {
 private:
     std::string name;
@@ -395,212 +657,174 @@ private:
     double salary;
     
 public:
-    Person(std::string n, int a, double s) : name(n), age(a), salary(s) {}
+    Person(std::string n, int a, double s) : name(std::move(n)), age(a), salary(s) {}
     
-    // 三路比较运算符 - 自动生成所有比较运算符
-    auto operator<=>(const Person& other) const {
-        // 按优先级比较：先姓名，再年龄，最后薪水
-        if (auto cmp = name <=> other.name; cmp != 0) {
+    // 自定义比较逻辑：首先按年龄，然后按姓名，最后按薪水
+    std::strong_ordering operator<=>(const Person& other) const {
+        if (auto cmp = age <=> other.age; cmp != 0) {
             return cmp;
         }
-        if (auto cmp = age <=> other.age; cmp != 0) {
+        if (auto cmp = name <=> other.name; cmp != 0) {
             return cmp;
         }
         return salary <=> other.salary;
     }
     
-    // 相等比较（可选，如果需要特殊的相等逻辑）
+    // 相等比较可以单独定义，或者依赖于<=>
     bool operator==(const Person& other) const {
-        return name == other.name && age == other.age && salary == other.salary;
+        return (*this <=> other) == 0;
     }
     
-    // 用于输出
-    friend std::ostream& operator<<(std::ostream& os, const Person& p) {
-        return os << p.name << "(" << p.age << ", $" << p.salary << ")";
+    void print() const {
+        std::cout << name << " (age: " << age << ", salary: " << salary << ")";
     }
 };
 
-// 自定义比较类型
-enum class Grade { F, D, C, B, A };
-
-struct Student {
-    std::string name;
-    Grade grade;
+// 部分比较示例
+struct Temperature {
+    double celsius;
     
-    // 只定义三路比较，其他比较运算符自动生成
-    std::strong_ordering operator<=>(const Student& other) const {
-        if (auto cmp = name <=> other.name; cmp != 0) {
-            return cmp;
+    std::partial_ordering operator<=>(const Temperature& other) const {
+        // 处理NaN情况
+        if (std::isnan(celsius) || std::isnan(other.celsius)) {
+            return std::partial_ordering::unordered;
         }
-        return grade <=> other.grade;
+        return celsius <=> other.celsius;
     }
     
-    bool operator==(const Student& other) const = default;  // 默认相等比较
+    bool operator==(const Temperature& other) const {
+        return (*this <=> other) == 0;
+    }
 };
 
-void spaceshipOperatorExamples() {
+void spaceship_examples() {
+    // 1. 基本点比较
+    Point p1{1, 2};
+    Point p2{1, 3};
+    Point p3{1, 2};
+    
+    std::cout << "Point comparisons:\n";
+    std::cout << "p1 == p3: " << (p1 == p3) << std::endl;
+    std::cout << "p1 < p2: " << (p1 < p2) << std::endl;
+    std::cout << "p1 > p2: " << (p1 > p2) << std::endl;
+    
+    // 2. 人员比较
     Person alice("Alice", 30, 50000);
     Person bob("Bob", 25, 45000);
-    Person charlie("Alice", 35, 60000);
+    Person charlie("Charlie", 30, 55000);
     
-    std::cout << "Comparing persons:" << std::endl;
-    std::cout << alice << " vs " << bob << ": ";
+    std::cout << "\nPerson comparisons:\n";
     
-    if (alice < bob) {
-        std::cout << "Alice < Bob" << std::endl;
-    } else if (alice > bob) {
-        std::cout << "Alice > Bob" << std::endl;
+    std::cout << "Alice vs Bob: ";
+    alice.print();
+    std::cout << " vs ";
+    bob.print();
+    if (alice > bob) {
+        std::cout << " -> Alice is greater\n";
     } else {
-        std::cout << "Alice == Bob" << std::endl;
+        std::cout << " -> Bob is greater or equal\n";
     }
     
-    std::cout << alice << " vs " << charlie << ": ";
+    std::cout << "Alice vs Charlie: ";
+    alice.print();
+    std::cout << " vs ";
+    charlie.print();
     if (alice < charlie) {
-        std::cout << "Alice < Charlie" << std::endl;
-    } else if (alice > charlie) {
-        std::cout << "Alice > Charlie" << std::endl;
+        std::cout << " -> Alice is less\n";
     } else {
-        std::cout << "Alice == Charlie" << std::endl;
+        std::cout << " -> Charlie is less or equal\n";
     }
     
-    // 使用三路比较的结果
-    auto cmp = alice <=> bob;
-    if (cmp < 0) {
-        std::cout << "Alice comes before Bob" << std::endl;
-    } else if (cmp > 0) {
-        std::cout << "Alice comes after Bob" << std::endl;
-    } else {
-        std::cout << "Alice and Bob are equivalent" << std::endl;
+    // 3. 温度比较（部分排序）
+    Temperature t1{20.0};
+    Temperature t2{25.0};
+    Temperature t3{std::numeric_limits<double>::quiet_NaN()};
+    
+    std::cout << "\nTemperature comparisons:\n";
+    std::cout << "20°C < 25°C: " << (t1 < t2) << std::endl;
+    std::cout << "20°C == NaN: " << (t1 == t3) << std::endl;
+    
+    auto cmp = t1 <=> t3;
+    if (cmp == std::partial_ordering::unordered) {
+        std::cout << "20°C and NaN are unordered\n";
     }
 }
 ```
 
-### 5. 其他重要特性
+## 其他C++20特性
 
-#### 5.1 指定初始化器 (Designated Initializers)
+### 指定初始化器 (Designated Initializers)
 ```cpp
-struct Point3D {
-    double x, y, z;
-};
-
 struct Config {
-    std::string host;
-    int port;
-    bool ssl_enabled;
-    int timeout;
+    std::string name;
+    int port = 8080;
+    bool debug = false;
 };
 
-void designatedInitializerExamples() {
-    // 指定初始化器 - 提高可读性
-    Point3D p1{.x = 1.0, .y = 2.0, .z = 3.0};
-    Point3D p2{.z = 5.0, .x = 1.0};  // 可以跳过某些字段，顺序可以不同
-    
+void designated_initializers() {
+    // C++20指定初始化器
     Config cfg{
-        .host = "localhost",
-        .port = 8080,
-        .ssl_enabled = true,
-        .timeout = 30
+        .name = "MyServer",
+        .port = 9000,
+        .debug = true
     };
     
-    std::cout << "Point: (" << p1.x << ", " << p1.y << ", " << p1.z << ")" << std::endl;
-    std::cout << "Config: " << cfg.host << ":" << cfg.port << std::endl;
+    std::cout << "Config: " << cfg.name << ":" << cfg.port 
+              << " (debug: " << cfg.debug << ")\n";
 }
 ```
 
-#### 5.2 模板语法改进
+### consteval 函数
 ```cpp
-// 缩写函数模板
-void print(auto value) {  // 等价于 template<typename T> void print(T value)
-    std::cout << value << std::endl;
-}
-
-// 约束的缩写语法
-void processNumber(std::integral auto number) {  // 使用概念约束
-    std::cout << "Processing integer: " << number << std::endl;
-}
-
-void processFloating(std::floating_point auto number) {
-    std::cout << "Processing float: " << number << std::endl;
-}
-
-// 泛型lambda改进
-auto lambda = []<typename T>(T value) {  // 模板lambda
-    if constexpr (std::is_integral_v<T>) {
-        return value * 2;
-    } else {
-        return value;
-    }
-};
-```
-
-#### 5.3 consteval和constinit
-```cpp
-// consteval - 强制编译时计算
+// consteval确保函数在编译时求值
 consteval int factorial(int n) {
-    if (n <= 1) return 1;
-    return n * factorial(n - 1);
+    return (n <= 1) ? 1 : n * factorial(n - 1);
 }
 
-// constinit - 保证编译时初始化
-constinit int global_value = factorial(5);  // 必须在编译时计算
-
-void constEvalExamples() {
-    constexpr int result = factorial(6);  // 编译时计算
-    std::cout << "6! = " << result << std::endl;
-    std::cout << "Global value: " << global_value << std::endl;
+void consteval_example() {
+    constexpr int fact5 = factorial(5); // 编译时计算
+    std::cout << "5! = " << fact5 << std::endl;
+    
+    // int runtime_n = 5;
+    // factorial(runtime_n); // 编译错误：不能在运行时调用
 }
 ```
 
 ## 实践练习
 
-### 练习1：使用概念设计安全的容器
-```cpp
-// 设计一个使用概念约束的安全容器类
-// 只接受可比较的类型，提供类型安全的操作
-```
+### 练习1：概念驱动设计
+使用concepts设计一个通用的容器算法库：
+- 定义不同类型的容器概念
+- 实现基于概念的算法重载
+- 提供清晰的错误信息
 
-### 练习2：用协程实现异步任务
-```cpp
-// 实现一个简单的任务调度器
-// 使用协程处理异步操作
-```
+### 练习2：协程异步框架
+实现一个简单的异步任务框架：
+- 支持异步任务链
+- 实现简单的任务调度器
+- 支持错误处理
 
-### 练习3：范围算法应用
-```cpp
-// 使用ranges重构复杂的数据处理逻辑
-// 比较传统STL算法和ranges的差异
-```
+### 练习3：模块化数学库
+使用modules创建一个数学计算库：
+- 分离接口和实现
+- 支持复数运算
+- 提供统计函数
 
-## 重点总结
+### 练习4：范围处理管道
+使用ranges实现数据处理管道：
+- 文本处理管道
+- 数值计算管道
+- 支持自定义视图
 
-1. **概念**：为模板提供编译时约束，提高代码安全性
-2. **范围**：函数式编程风格，简化容器操作
-3. **协程**：简化异步编程，支持生成器模式
-4. **三路比较**：简化比较操作的实现
-5. **指定初始化**：提高结构体初始化的可读性
-6. **模板改进**：缩写语法，约束语法
-7. **consteval/constinit**：更强的编译时保证
+## 今日总结
+通过学习C++20新特性，你应该掌握：
+1. 使用concepts约束模板参数，提供更好的错误信息
+2. 使用协程编写异步和生成器代码
+3. 使用modules组织大型项目代码
+4. 使用ranges简化算法和数据处理
+5. 使用三路比较运算符简化比较操作
 
-## 迁移和采用建议
+## 明天预告
+明天我们将进行项目实战，实现常用的数据结构，包括链表、栈、队列、二叉搜索树和哈希表等。
 
-1. **渐进式迁移**：优先在新代码中使用新特性
-2. **编译器支持**：确保目标编译器完全支持C++20
-3. **团队培训**：新特性需要团队学习和适应
-4. **性能测试**：验证新特性对性能的影响
-5. **代码审查**：建立C++20最佳实践
-
-## 注意事项
-
-1. **编译器兼容性**：C++20支持程度因编译器而异
-2. **编译时间**：某些特性可能增加编译时间
-3. **调试支持**：调试器对新特性的支持可能有限
-4. **学习曲线**：概念和协程有一定学习难度
-5. **向后兼容**：考虑与旧版本代码的兼容性
-
-## 拓展阅读
-
-- C++20标准文档
-- 《C++20 The Complete Guide》
-- cppreference.com的C++20特性介绍
-- CppCon关于C++20的演讲
-- 各编译器的C++20支持状态
+[返回第四周](/plan/week4/) | [上一天：第25天](/plan/week4/day25/) | [下一天：第27天](/plan/week4/day27/)

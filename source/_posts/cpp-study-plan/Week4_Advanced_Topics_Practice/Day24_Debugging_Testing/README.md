@@ -1,666 +1,492 @@
+﻿---
+title: C++ 学习计划 - 第24天:调试与测试
+date: 2025-09-16 10:27:00
+categories: Cpp
+tags:
+    - C++ 
+    - Study Plan
+    - Week4
+    - Day24
+layout: page
+menu_id: plan
+permalink: /plan/week4/day24/
+---
+
 # 第24天：调试与测试
 
 ## 学习目标
-掌握C++调试技巧和测试方法，学会使用各种调试工具，建立完善的测试框架，提高代码质量和可靠性。
+掌握C++程序的调试技巧和测试方法，学会使用调试工具和测试框架，提高代码质量和开发效率。
 
-## 今日学习内容
+## 学习资源链接
+
+### 📚 官方文档和教程
+- [GDB User Manual](https://www.gnu.org/software/gdb/documentation/) - GDB官方文档
+- [Valgrind Documentation](https://valgrind.org/docs/manual/) - Valgrind内存检查工具
+- [Google Test Documentation](https://google.github.io/googletest/) - Google测试框架
+- [Catch2 Documentation](https://github.com/catchorg/Catch2/blob/devel/docs/Readme.md) - Catch2测试框架
+
+### 🎥 视频教程
+- [GDB Tutorial](https://www.youtube.com/watch?v=bWH-nL7v5F4) - GDB调试教程
+- [Valgrind Memory Debugging](https://www.youtube.com/watch?v=bb1bTJtgXrI) - Valgrind使用教程
+- [C++ Unit Testing](https://www.youtube.com/watch?v=16FI1-d2P4E) - C++单元测试
+- [Debug vs Release](https://www.youtube.com/watch?v=2BuJjaGuInI) - 调试版本vs发布版本
+
+### 📖 深入阅读
+- [Effective Debugging](https://www.amazon.com/Effective-Debugging-Specific-Software-Hardware/dp/0134394909) - 高效调试技巧
+- [Modern C++ Testing](https://leanpub.com/modern-cpp-testing) - 现代C++测试
+- [The Art of Debugging](https://www.amazon.com/Art-Debugging-GDB-DDD-Eclipse/dp/1593271743) - 调试艺术
+
+### 🔧 调试和测试工具
+- [Visual Studio Debugger](https://docs.microsoft.com/en-us/visualstudio/debugger/) - VS调试器
+- [CLion Debugger](https://www.jetbrains.com/help/clion/debugging-code.html) - CLion调试器
+- [AddressSanitizer](https://github.com/google/sanitizers/wiki/AddressSanitizer) - 内存错误检测
+- [ThreadSanitizer](https://github.com/google/sanitizers/wiki/ThreadSanitizerCppManual) - 线程错误检测
+
+## 学习内容
 
 ### 1. GDB调试器使用
-**概念：** GDB是GNU调试器，是C++开发中最重要的调试工具。
 
-**基本命令：**
-- `gdb program`: 启动调试
-- `run`: 运行程序
-- `break`: 设置断点
-- `step/next`: 单步执行
-- `print`: 打印变量值
-- `backtrace`: 查看调用栈
+#### 基本GDB命令
+```bash
+# 编译带调试信息的程序
+g++ -g -O0 program.cpp -o program
 
-**GDB使用示例：**
+# 启动GDB
+gdb ./program
+
+# 基本调试命令
+(gdb) run                    # 运行程序
+(gdb) break main             # 在main函数设置断点
+(gdb) break 15               # 在第15行设置断点
+(gdb) info breakpoints       # 查看断点信息
+(gdb) continue              # 继续执行
+(gdb) step                  # 单步执行（进入函数）
+(gdb) next                  # 单步执行（不进入函数）
+(gdb) print variable        # 打印变量值
+(gdb) watch variable        # 监视变量变化
+(gdb) backtrace            # 查看调用栈
+(gdb) info locals          # 查看局部变量
+(gdb) quit                 # 退出GDB
+```
+
+#### 高级GDB技巧
 ```cpp
-// debug_example.cpp
+// 示例程序：debug_example.cpp
 #include <iostream>
 #include <vector>
+#include <memory>
 
-class Calculator {
+class DebugExample {
 private:
-    std::vector<double> history;
+    std::vector<int> data;
     
 public:
-    double divide(double a, double b) {
-        if (b == 0.0) {
-            throw std::runtime_error("Division by zero");
-        }
-        double result = a / b;
-        history.push_back(result);
-        return result;
-    }
-    
-    void printHistory() const {
-        std::cout << "History: ";
-        for (size_t i = 0; i < history.size(); ++i) {
-            std::cout << history[i];
-            if (i < history.size() - 1) std::cout << ", ";
-        }
-        std::cout << std::endl;
-    }
-    
-    double getAverage() const {
-        if (history.empty()) return 0.0;
+    void process() {
+        data = {1, 2, 3, 4, 5};
         
-        double sum = 0.0;
-        for (double val : history) {
-            sum += val;
+        for (size_t i = 0; i <= data.size(); ++i) { // 故意的越界错误
+            std::cout << "data[" << i << "] = " << data[i] << std::endl;
         }
-        return sum / history.size();
+    }
+    
+    void memory_leak_example() {
+        int* ptr = new int[100]; // 内存泄漏
+        // 忘记delete[] ptr;
     }
 };
 
 int main() {
-    Calculator calc;
-    
-    try {
-        std::cout << calc.divide(10.0, 2.0) << std::endl;  // 断点1
-        std::cout << calc.divide(15.0, 3.0) << std::endl;  // 断点2
-        std::cout << calc.divide(8.0, 0.0) << std::endl;   // 会抛异常
-        
-        calc.printHistory();
-        std::cout << "Average: " << calc.getAverage() << std::endl;
-        
-    } catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
-    }
-    
+    DebugExample example;
+    example.process();
+    example.memory_leak_example();
     return 0;
 }
+```
 
-/*
-GDB调试会话示例：
-
-$ g++ -g -o debug_example debug_example.cpp
-$ gdb debug_example
-
-(gdb) break main                    # 在main函数设置断点
-(gdb) break Calculator::divide      # 在成员函数设置断点
-(gdb) run                          # 运行程序
-
-(gdb) step                         # 单步进入
-(gdb) next                         # 单步跳过
-(gdb) print calc                   # 打印对象
-(gdb) print calc.history           # 打印成员变量
-(gdb) print a                      # 打印参数
-
-(gdb) watch calc.history.size()    # 监视表达式
-(gdb) backtrace                    # 查看调用栈
-(gdb) info locals                  # 查看局部变量
-
-(gdb) continue                     # 继续执行
-(gdb) quit                        # 退出调试器
-*/
+```bash
+# GDB调试会话示例
+gdb ./debug_example
+(gdb) set print pretty on           # 美化输出
+(gdb) break DebugExample::process   # 在成员函数设置断点
+(gdb) run
+(gdb) print this                    # 打印this指针
+(gdb) print data                    # 打印STL容器
+(gdb) print data.size()             # 调用成员函数
+(gdb) watch data[i]                 # 监视数组元素
 ```
 
 ### 2. Valgrind内存检查
-**概念：** Valgrind是强大的内存错误检测工具。
 
-**主要功能：**
-- 内存泄漏检测
-- 未初始化内存访问
-- 数组越界访问
-- 重复释放内存
+#### Memcheck工具
+```bash
+# 编译程序（保留调试信息）
+g++ -g -O0 program.cpp -o program
 
-**Valgrind使用示例：**
+# 使用Valgrind检查内存错误
+valgrind --tool=memcheck --leak-check=full --show-leak-kinds=all ./program
+
+# 详细内存检查
+valgrind --tool=memcheck --leak-check=full --track-origins=yes --show-reachable=yes ./program
+```
+
+#### 常见内存错误检测
 ```cpp
-// memory_bugs.cpp - 故意包含内存错误的代码
+// 内存错误示例
 #include <iostream>
-#include <memory>
+#include <cstring>
 
-class MemoryBugDemo {
+void memory_errors_example() {
+    // 1. 内存泄漏
+    int* leak = new int[100];
+    // delete[] leak; // 忘记释放
+    
+    // 2. 重复释放
+    int* ptr = new int(42);
+    delete ptr;
+    // delete ptr; // 重复释放
+    
+    // 3. 使用已释放的内存
+    int* dangling = new int(10);
+    delete dangling;
+    // std::cout << *dangling; // 使用悬空指针
+    
+    // 4. 数组越界
+    int arr[10];
+    // arr[10] = 5; // 越界访问
+    
+    // 5. 未初始化内存
+    int uninitialized;
+    // if (uninitialized == 0) { } // 使用未初始化变量
+}
+```
+
+### 3. 单元测试框架
+
+#### Google Test (gtest) 框架
+```cpp
+// test_example.cpp
+#include <gtest/gtest.h>
+#include <vector>
+#include <algorithm>
+
+// 被测试的类
+class Calculator {
 public:
-    void memoryLeak() {
-        int* ptr = new int[100];  // 内存泄漏：没有delete[]
-        *ptr = 42;
-        std::cout << "Allocated memory: " << *ptr << std::endl;
-        // delete[] ptr;  // 忘记释放内存
-    }
-    
-    void uninitializedAccess() {
-        int* ptr = new int;  // 未初始化
-        std::cout << "Uninitialized value: " << *ptr << std::endl;  // 错误！
-        delete ptr;
-    }
-    
-    void bufferOverflow() {
-        int* arr = new int[10];
-        for (int i = 0; i <= 10; ++i) {  // 越界访问
-            arr[i] = i;
-        }
-        delete[] arr;
-    }
-    
-    void doubleFree() {
-        int* ptr = new int(42);
-        delete ptr;
-        delete ptr;  // 重复释放
-    }
-    
-    void useAfterFree() {
-        int* ptr = new int(42);
-        delete ptr;
-        std::cout << *ptr << std::endl;  // 使用已释放的内存
+    int add(int a, int b) { return a + b; }
+    int subtract(int a, int b) { return a - b; }
+    int multiply(int a, int b) { return a * b; }
+    double divide(double a, double b) {
+        if (b == 0) throw std::invalid_argument("Division by zero");
+        return a / b;
     }
 };
 
-/*
-Valgrind使用命令：
+// 测试夹具
+class CalculatorTest : public ::testing::Test {
+protected:
+    void SetUp() override {
+        calc = std::make_unique<Calculator>();
+    }
+    
+    void TearDown() override {
+        // 清理资源
+    }
+    
+    std::unique_ptr<Calculator> calc;
+};
 
-$ g++ -g -o memory_bugs memory_bugs.cpp
-$ valgrind --tool=memcheck --leak-check=full ./memory_bugs
+// 基本测试
+TEST_F(CalculatorTest, Addition) {
+    EXPECT_EQ(calc->add(2, 3), 5);
+    EXPECT_EQ(calc->add(-1, 1), 0);
+    EXPECT_EQ(calc->add(0, 0), 0);
+}
 
-输出示例：
-==12345== Memcheck, a memory error detector
-==12345== Invalid read of size 4
-==12345== Invalid write of size 4
-==12345== 100 bytes in 1 blocks are definitely lost
-*/
+TEST_F(CalculatorTest, Subtraction) {
+    EXPECT_EQ(calc->subtract(5, 3), 2);
+    EXPECT_EQ(calc->subtract(0, 5), -5);
+}
+
+TEST_F(CalculatorTest, Multiplication) {
+    EXPECT_EQ(calc->multiply(3, 4), 12);
+    EXPECT_EQ(calc->multiply(-2, 3), -6);
+    EXPECT_EQ(calc->multiply(0, 100), 0);
+}
+
+TEST_F(CalculatorTest, Division) {
+    EXPECT_DOUBLE_EQ(calc->divide(10, 2), 5.0);
+    EXPECT_DOUBLE_EQ(calc->divide(7, 2), 3.5);
+    
+    // 测试异常
+    EXPECT_THROW(calc->divide(1, 0), std::invalid_argument);
+}
+
+// 参数化测试
+class AdditionTest : public ::testing::TestWithParam<std::tuple<int, int, int>> {};
+
+TEST_P(AdditionTest, ParameterizedAddition) {
+    auto [a, b, expected] = GetParam();
+    Calculator calc;
+    EXPECT_EQ(calc.add(a, b), expected);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    AdditionValues,
+    AdditionTest,
+    ::testing::Values(
+        std::make_tuple(1, 2, 3),
+        std::make_tuple(-1, 1, 0),
+        std::make_tuple(100, 200, 300)
+    )
+);
+
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
 ```
 
-### 3. 断言和错误处理
-**概念：** 使用断言进行运行时检查，建立健壮的错误处理机制。
+#### Catch2 测试框架
+```cpp
+// catch2_example.cpp
+#define CATCH_CONFIG_MAIN
+#include <catch2/catch.hpp>
+#include <vector>
+#include <stdexcept>
 
-**断言使用示例：**
+class StringProcessor {
+public:
+    std::string reverse(const std::string& str) {
+        return std::string(str.rbegin(), str.rend());
+    }
+    
+    bool isPalindrome(const std::string& str) {
+        return str == reverse(str);
+    }
+    
+    std::vector<std::string> split(const std::string& str, char delimiter) {
+        std::vector<std::string> tokens;
+        std::stringstream ss(str);
+        std::string token;
+        
+        while (std::getline(ss, token, delimiter)) {
+            tokens.push_back(token);
+        }
+        
+        return tokens;
+    }
+};
+
+TEST_CASE("StringProcessor tests", "[string]") {
+    StringProcessor processor;
+    
+    SECTION("Reverse function") {
+        REQUIRE(processor.reverse("hello") == "olleh");
+        REQUIRE(processor.reverse("") == "");
+        REQUIRE(processor.reverse("a") == "a");
+    }
+    
+    SECTION("Palindrome detection") {
+        REQUIRE(processor.isPalindrome("racecar") == true);
+        REQUIRE(processor.isPalindrome("hello") == false);
+        REQUIRE(processor.isPalindrome("") == true);
+        REQUIRE(processor.isPalindrome("a") == true);
+    }
+    
+    SECTION("String splitting") {
+        auto result = processor.split("a,b,c", ',');
+        REQUIRE(result.size() == 3);
+        REQUIRE(result[0] == "a");
+        REQUIRE(result[1] == "b");
+        REQUIRE(result[2] == "c");
+        
+        auto empty_result = processor.split("", ',');
+        REQUIRE(empty_result.size() == 1);
+        REQUIRE(empty_result[0] == "");
+    }
+}
+
+// 基准测试
+TEST_CASE("Performance benchmark", "[benchmark]") {
+    StringProcessor processor;
+    std::string large_string(10000, 'a');
+    
+    BENCHMARK("String reversal") {
+        return processor.reverse(large_string);
+    };
+}
+```
+
+### 4. 断言的使用
+
+#### 标准断言
 ```cpp
 #include <cassert>
-#include <stdexcept>
 #include <iostream>
 
 class SafeArray {
 private:
-    std::unique_ptr<int[]> data;
-    size_t size_;
+    std::vector<int> data;
     
 public:
-    SafeArray(size_t size) : size_(size) {
-        assert(size > 0);  // 调试时检查
-        if (size == 0) {
-            throw std::invalid_argument("Size must be positive");
-        }
-        data = std::make_unique<int[]>(size);
-    }
+    SafeArray(size_t size) : data(size) {}
     
     int& at(size_t index) {
-        // 调试版本的检查
-        assert(index < size_);
-        
-        // 发布版本的检查
-        if (index >= size_) {
-            throw std::out_of_range("Index out of range");
-        }
-        
+        // 调试版本中检查边界
+        assert(index < data.size() && "Index out of bounds");
         return data[index];
     }
     
     const int& at(size_t index) const {
-        assert(index < size_);
-        if (index >= size_) {
-            throw std::out_of_range("Index out of range");
-        }
+        assert(index < data.size() && "Index out of bounds");
         return data[index];
     }
     
-    size_t size() const noexcept { return size_; }
+    size_t size() const { return data.size(); }
 };
 
 // 自定义断言宏
 #ifdef DEBUG
-    #define SAFE_ASSERT(condition, message) \
+    #define ASSERT(condition, message) \
         do { \
             if (!(condition)) { \
                 std::cerr << "Assertion failed: " << #condition \
-                         << " - " << message << std::endl; \
+                         << " - " << message \
+                         << " at " << __FILE__ << ":" << __LINE__ << std::endl; \
                 std::abort(); \
             } \
-        } while(0)
+        } while (0)
 #else
-    #define SAFE_ASSERT(condition, message) ((void)0)
+    #define ASSERT(condition, message) do { } while (0)
 #endif
-
-void testSafeArray() {
-    try {
-        SafeArray arr(10);
-        
-        // 正常使用
-        arr.at(0) = 42;
-        std::cout << "arr[0] = " << arr.at(0) << std::endl;
-        
-        // 测试边界检查
-        SAFE_ASSERT(arr.size() == 10, "Array size should be 10");
-        
-        // 这会抛出异常
-        arr.at(10) = 100;
-        
-    } catch (const std::exception& e) {
-        std::cerr << "Exception: " << e.what() << std::endl;
-    }
-}
 ```
 
-### 4. 单元测试框架
-**概念：** 使用测试框架系统性地测试代码功能。
+### 5. 日志系统
 
-**简单测试框架实现：**
+#### 简单日志实现
 ```cpp
 #include <iostream>
-#include <vector>
-#include <functional>
-#include <string>
-#include <sstream>
-
-// 简单的测试框架
-class TestFramework {
-private:
-    struct TestCase {
-        std::string name;
-        std::function<void()> test_func;
-    };
-    
-    std::vector<TestCase> tests;
-    int passed = 0;
-    int failed = 0;
-    
-public:
-    void addTest(const std::string& name, std::function<void()> test) {
-        tests.push_back({name, test});
-    }
-    
-    void assertEqual(int expected, int actual, const std::string& message = "") {
-        if (expected != actual) {
-            std::stringstream ss;
-            ss << "Expected " << expected << ", got " << actual;
-            if (!message.empty()) {
-                ss << " (" << message << ")";
-            }
-            throw std::runtime_error(ss.str());
-        }
-    }
-    
-    void assertTrue(bool condition, const std::string& message = "") {
-        if (!condition) {
-            throw std::runtime_error("Assertion failed: " + message);
-        }
-    }
-    
-    void assertThrows(std::function<void()> func, const std::string& message = "") {
-        bool threw = false;
-        try {
-            func();
-        } catch (...) {
-            threw = true;
-        }
-        if (!threw) {
-            throw std::runtime_error("Expected exception was not thrown: " + message);
-        }
-    }
-    
-    void runTests() {
-        std::cout << "Running " << tests.size() << " tests...\n" << std::endl;
-        
-        for (const auto& test : tests) {
-            try {
-                std::cout << "Running: " << test.name << "... ";
-                test.test_func();
-                std::cout << "PASSED" << std::endl;
-                ++passed;
-            } catch (const std::exception& e) {
-                std::cout << "FAILED - " << e.what() << std::endl;
-                ++failed;
-            }
-        }
-        
-        std::cout << "\n=== Test Results ===" << std::endl;
-        std::cout << "Passed: " << passed << std::endl;
-        std::cout << "Failed: " << failed << std::endl;
-        std::cout << "Total:  " << (passed + failed) << std::endl;
-    }
-};
-
-// 使用测试框架测试Calculator类
-void setupCalculatorTests(TestFramework& framework) {
-    framework.addTest("Test Division", []() {
-        Calculator calc;
-        TestFramework tf;
-        
-        double result = calc.divide(10.0, 2.0);
-        tf.assertEqual(5.0, result, "10/2 should equal 5");
-    });
-    
-    framework.addTest("Test Division by Zero", []() {
-        Calculator calc;
-        TestFramework tf;
-        
-        tf.assertThrows([&]() {
-            calc.divide(10.0, 0.0);
-        }, "Division by zero should throw exception");
-    });
-    
-    framework.addTest("Test History", []() {
-        Calculator calc;
-        TestFramework tf;
-        
-        calc.divide(10.0, 2.0);
-        calc.divide(15.0, 3.0);
-        
-        double avg = calc.getAverage();
-        tf.assertTrue(std::abs(avg - 4.0) < 0.001, "Average should be 4.0");
-    });
-}
-```
-
-### 5. 性能测试和基准测试
-**概念：** 系统性地测试代码性能，建立性能基准。
-
-**基准测试框架：**
-```cpp
-#include <chrono>
-#include <vector>
-#include <algorithm>
-#include <numeric>
-#include <iomanip>
-
-class BenchmarkFramework {
-private:
-    struct BenchmarkResult {
-        std::string name;
-        double min_time;
-        double max_time;
-        double avg_time;
-        double std_dev;
-        int iterations;
-    };
-    
-    std::vector<BenchmarkResult> results;
-    
-    double calculateStdDev(const std::vector<double>& times, double mean) {
-        double sum_sq_diff = 0.0;
-        for (double time : times) {
-            double diff = time - mean;
-            sum_sq_diff += diff * diff;
-        }
-        return std::sqrt(sum_sq_diff / times.size());
-    }
-    
-public:
-    template<typename Func>
-    void benchmark(const std::string& name, Func&& func, int iterations = 100) {
-        std::vector<double> times;
-        times.reserve(iterations);
-        
-        // 热身运行
-        for (int i = 0; i < 5; ++i) {
-            func();
-        }
-        
-        // 正式测试
-        for (int i = 0; i < iterations; ++i) {
-            auto start = std::chrono::high_resolution_clock::now();
-            func();
-            auto end = std::chrono::high_resolution_clock::now();
-            
-            auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(
-                end - start).count();
-            times.push_back(duration);
-        }
-        
-        double min_time = *std::min_element(times.begin(), times.end());
-        double max_time = *std::max_element(times.begin(), times.end());
-        double avg_time = std::accumulate(times.begin(), times.end(), 0.0) / times.size();
-        double std_dev = calculateStdDev(times, avg_time);
-        
-        results.push_back({name, min_time, max_time, avg_time, std_dev, iterations});
-    }
-    
-    void printResults() {
-        std::cout << "\n=== Benchmark Results ===" << std::endl;
-        std::cout << std::left << std::setw(30) << "Test Name"
-                  << std::setw(12) << "Min (ns)"
-                  << std::setw(12) << "Max (ns)"
-                  << std::setw(12) << "Avg (ns)"
-                  << std::setw(12) << "Std Dev"
-                  << std::setw(8) << "Iters" << std::endl;
-        std::cout << std::string(86, '-') << std::endl;
-        
-        for (const auto& result : results) {
-            std::cout << std::left << std::setw(30) << result.name
-                      << std::setw(12) << std::fixed << std::setprecision(1) << result.min_time
-                      << std::setw(12) << result.max_time
-                      << std::setw(12) << result.avg_time
-                      << std::setw(12) << result.std_dev
-                      << std::setw(8) << result.iterations << std::endl;
-        }
-    }
-    
-    // 比较两个基准测试结果
-    void compare(const std::string& baseline, const std::string& comparison) {
-        auto baseline_it = std::find_if(results.begin(), results.end(),
-            [&](const BenchmarkResult& r) { return r.name == baseline; });
-        auto comparison_it = std::find_if(results.begin(), results.end(),
-            [&](const BenchmarkResult& r) { return r.name == comparison; });
-            
-        if (baseline_it != results.end() && comparison_it != results.end()) {
-            double speedup = baseline_it->avg_time / comparison_it->avg_time;
-            std::cout << "\nComparison: " << comparison << " vs " << baseline << std::endl;
-            std::cout << "Speedup: " << std::fixed << std::setprecision(2) << speedup << "x" << std::endl;
-        }
-    }
-};
-
-// 性能测试示例
-void runPerformanceTests() {
-    BenchmarkFramework benchmark;
-    
-    // 测试不同的排序算法
-    const size_t size = 10000;
-    std::vector<int> data(size);
-    std::iota(data.begin(), data.end(), 1);
-    
-    benchmark.benchmark("std::sort", [&]() {
-        std::vector<int> copy = data;
-        std::random_shuffle(copy.begin(), copy.end());
-        std::sort(copy.begin(), copy.end());
-    });
-    
-    benchmark.benchmark("std::stable_sort", [&]() {
-        std::vector<int> copy = data;
-        std::random_shuffle(copy.begin(), copy.end());
-        std::stable_sort(copy.begin(), copy.end());
-    });
-    
-    benchmark.printResults();
-    benchmark.compare("std::sort", "std::stable_sort");
-}
-```
-
-### 6. 日志系统
-**概念：** 建立完善的日志系统，帮助调试和监控程序运行。
-
-**日志系统实现：**
-```cpp
 #include <fstream>
 #include <sstream>
-#include <mutex>
-#include <thread>
+#include <chrono>
 #include <iomanip>
 
 enum class LogLevel {
-    DEBUG = 0,
-    INFO = 1,
-    WARNING = 2,
-    ERROR = 3,
-    CRITICAL = 4
+    DEBUG,
+    INFO,
+    WARNING,
+    ERROR
 };
 
 class Logger {
 private:
-    std::ofstream log_file;
+    std::ofstream file;
     LogLevel min_level;
-    std::mutex log_mutex;
+    
+    std::string getCurrentTime() {
+        auto now = std::chrono::system_clock::now();
+        auto time_t = std::chrono::system_clock::to_time_t(now);
+        std::stringstream ss;
+        ss << std::put_time(std::localtime(&time_t), "%Y-%m-%d %H:%M:%S");
+        return ss.str();
+    }
     
     std::string levelToString(LogLevel level) {
         switch (level) {
             case LogLevel::DEBUG: return "DEBUG";
             case LogLevel::INFO: return "INFO";
-            case LogLevel::WARNING: return "WARN";
+            case LogLevel::WARNING: return "WARNING";
             case LogLevel::ERROR: return "ERROR";
-            case LogLevel::CRITICAL: return "CRIT";
             default: return "UNKNOWN";
         }
     }
     
-    std::string getCurrentTime() {
-        auto now = std::chrono::system_clock::now();
-        auto time_t = std::chrono::system_clock::to_time_t(now);
-        auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-            now.time_since_epoch()) % 1000;
-        
-        std::stringstream ss;
-        ss << std::put_time(std::localtime(&time_t), "%Y-%m-%d %H:%M:%S");
-        ss << '.' << std::setfill('0') << std::setw(3) << ms.count();
-        return ss.str();
-    }
-    
 public:
-    Logger(const std::string& filename, LogLevel level = LogLevel::INFO)
-        : min_level(level) {
-        log_file.open(filename, std::ios::app);
-        if (!log_file.is_open()) {
-            throw std::runtime_error("Cannot open log file: " + filename);
+    Logger(const std::string& filename, LogLevel level = LogLevel::INFO) 
+        : file(filename), min_level(level) {}
+    
+    template<typename... Args>
+    void log(LogLevel level, Args&&... args) {
+        if (level >= min_level) {
+            std::stringstream ss;
+            ss << "[" << getCurrentTime() << "] "
+               << "[" << levelToString(level) << "] ";
+            
+            ((ss << std::forward<Args>(args) << " "), ...);
+            
+            std::string message = ss.str();
+            file << message << std::endl;
+            std::cout << message << std::endl;
         }
     }
     
-    ~Logger() {
-        if (log_file.is_open()) {
-            log_file.close();
-        }
+    template<typename... Args>
+    void debug(Args&&... args) {
+        log(LogLevel::DEBUG, std::forward<Args>(args)...);
     }
     
     template<typename... Args>
-    void log(LogLevel level, const std::string& format, Args&&... args) {
-        if (level < min_level) return;
-        
-        std::lock_guard<std::mutex> lock(log_mutex);
-        
-        std::stringstream ss;
-        formatString(ss, format, std::forward<Args>(args)...);
-        
-        std::string message = "[" + getCurrentTime() + "] "
-                            + "[" + levelToString(level) + "] "
-                            + "[Thread-" + std::to_string(std::hash<std::thread::id>{}(std::this_thread::get_id()) % 10000) + "] "
-                            + ss.str();
-        
-        log_file << message << std::endl;
-        log_file.flush();
-        
-        // 同时输出到控制台（错误级别）
-        if (level >= LogLevel::ERROR) {
-            std::cerr << message << std::endl;
-        }
-    }
-    
-    // 便利方法
-    template<typename... Args>
-    void debug(const std::string& format, Args&&... args) {
-        log(LogLevel::DEBUG, format, std::forward<Args>(args)...);
+    void info(Args&&... args) {
+        log(LogLevel::INFO, std::forward<Args>(args)...);
     }
     
     template<typename... Args>
-    void info(const std::string& format, Args&&... args) {
-        log(LogLevel::INFO, format, std::forward<Args>(args)...);
+    void warning(Args&&... args) {
+        log(LogLevel::WARNING, std::forward<Args>(args)...);
     }
     
     template<typename... Args>
-    void warning(const std::string& format, Args&&... args) {
-        log(LogLevel::WARNING, format, std::forward<Args>(args)...);
-    }
-    
-    template<typename... Args>
-    void error(const std::string& format, Args&&... args) {
-        log(LogLevel::ERROR, format, std::forward<Args>(args)...);
-    }
-    
-private:
-    void formatString(std::stringstream& ss, const std::string& format) {
-        ss << format;
-    }
-    
-    template<typename T, typename... Args>
-    void formatString(std::stringstream& ss, const std::string& format, T&& value, Args&&... args) {
-        size_t pos = format.find("{}");
-        if (pos != std::string::npos) {
-            ss << format.substr(0, pos) << value;
-            formatString(ss, format.substr(pos + 2), std::forward<Args>(args)...);
-        } else {
-            ss << format;
-        }
+    void error(Args&&... args) {
+        log(LogLevel::ERROR, std::forward<Args>(args)...);
     }
 };
 
-// 全局日志器
-extern Logger g_logger("application.log");
-
-#define LOG_DEBUG(...) g_logger.debug(__VA_ARGS__)
-#define LOG_INFO(...) g_logger.info(__VA_ARGS__)
-#define LOG_WARNING(...) g_logger.warning(__VA_ARGS__)
-#define LOG_ERROR(...) g_logger.error(__VA_ARGS__)
+// 使用示例
+void logging_example() {
+    Logger logger("app.log", LogLevel::DEBUG);
+    
+    logger.info("Application started");
+    logger.debug("Debug information:", 42, "items processed");
+    logger.warning("Low memory warning");
+    logger.error("Failed to open file:", "data.txt");
+}
 ```
 
 ## 实践练习
 
-### 练习1：调试复杂的内存问题
-```cpp
-// 创建包含各种内存错误的程序
-// 使用GDB和Valgrind进行调试
-```
+### 练习1：调试复杂程序
+创建一个包含多种错误的程序并使用GDB调试：
+- 逻辑错误
+- 内存错误
+- 性能问题
 
-### 练习2：建立完整的测试套件
-```cpp
-// 为之前实现的数据结构编写完整的单元测试
-// 包括边界条件、异常情况、性能测试
-```
+### 练习2：内存检查实战
+使用Valgrind检查程序的内存问题：
+- 内存泄漏检测
+- 越界访问检测
+- 未初始化内存使用
 
-### 练习3：性能分析和优化
-```cpp
-// 使用性能分析工具找出程序瓶颈
-// 实施优化并验证效果
-```
+### 练习3：完整测试套件
+为一个数据结构类编写完整的测试套件：
+- 单元测试
+- 集成测试
+- 性能测试
 
-## 重点总结
+### 练习4：日志系统设计
+设计和实现一个生产级的日志系统：
+- 多线程安全
+- 不同输出目标
+- 日志轮转功能
 
-1. **调试工具**：熟练使用GDB、Valgrind等调试工具
-2. **断言和错误处理**：建立健壮的错误检查机制
-3. **单元测试**：系统性测试代码功能
-4. **性能测试**：建立性能基准，监控性能变化
-5. **日志系统**：完善的日志记录和分析
-6. **内存安全**：避免内存泄漏和访问错误
+## 今日总结
+通过学习调试与测试，你应该掌握：
+1. GDB调试器的基本和高级用法
+2. Valgrind内存检查工具的使用
+3. 单元测试框架的应用
+4. 断言和日志在调试中的作用
+5. 调试和测试的最佳实践
 
-## 调试最佳实践
+## 明天预告
+明天我们将学习C++17的新特性，包括结构化绑定、if constexpr、std::optional等现代C++特性。
 
-1. **预防胜于治疗**：编写防御性代码
-2. **早期测试**：在开发过程中持续测试
-3. **自动化测试**：建立自动化测试流程
-4. **代码审查**：通过代码审查发现问题
-5. **持续集成**：在CI/CD中集成测试和分析工具
-
-## 注意事项
-
-1. **调试版本vs发布版本**：使用不同的编译选项
-2. **测试覆盖率**：确保测试覆盖所有重要代码路径
-3. **性能回归**：监控性能变化，防止性能退化
-4. **内存管理**：特别关注内存相关问题
-5. **多线程调试**：注意线程安全和竞态条件
-
-## 拓展阅读
-
-- 《Effective Debugging》
-- 《Google Test框架文档》
-- GDB官方文档
-- Valgrind用户手册
-- 《Clean Code》测试章节
+[返回第四周](/plan/week4/) | [上一天：第23天](/plan/week4/day23/) | [下一天：第25天](/plan/week4/day25/)

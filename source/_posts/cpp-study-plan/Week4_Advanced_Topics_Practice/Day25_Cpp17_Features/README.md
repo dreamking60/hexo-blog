@@ -1,122 +1,228 @@
+﻿---
+title: C++ 学习计划 - 第25天:C++17新特性
+date: 2025-09-16 10:28:00
+categories: Cpp
+tags:
+    - C++ 
+    - Study Plan
+    - Week4
+    - Day25
+layout: page
+menu_id: plan
+permalink: /plan/week4/day25/
+---
+
 # 第25天：C++17新特性
 
 ## 学习目标
-掌握C++17引入的新特性，学会在实际项目中应用这些特性来提高代码质量和开发效率。
+了解和掌握C++17标准引入的新特性，学会使用现代C++特性提高代码的可读性、安全性和性能。
 
-## 今日学习内容
+## 学习资源链接
+
+### 📚 官方文档和教程
+- [C++17 Reference](https://en.cppreference.com/w/cpp/17) - C++17官方参考文档
+- [C++17 Features](https://www.modernescpp.com/index.php/c-17-core) - C++17核心特性介绍
+- [C++17 in Detail](https://leanpub.com/cpp17indetail) - C++17详细指南
+- [ISO C++17 Standard](https://www.iso.org/standard/68564.html) - C++17标准文档
+
+### 🎥 视频教程
+- [C++17 Features Overview](https://www.youtube.com/watch?v=QpFjOlzg1r4) - C++17特性概览
+- [CppCon 2017 C++17 Talks](https://www.youtube.com/results?search_query=cppcon+2017+c%2B%2B17) - CppCon 2017 C++17演讲
+- [The Cherno C++17](https://www.youtube.com/watch?v=QpFjOlzg1r4) - C++17新特性讲解
+
+### 📖 深入阅读
+- [Effective Modern C++](https://www.amazon.com/Effective-Modern-Specific-Ways-Improve/dp/1491903996) - 现代C++最佳实践
+- [C++17 STL Cookbook](https://www.amazon.com/STL-Cookbook-enhancements-programming-expressions/dp/178712049X) - C++17 STL指南
+- [Professional C++](https://www.amazon.com/Professional-C-Marc-Gregoire/dp/1119695406) - 专业C++编程
+
+### 🔧 编译器支持
+- [GCC C++17 Support](https://gcc.gnu.org/projects/cxx-status.html#cxx17) - GCC对C++17的支持
+- [Clang C++17 Support](https://clang.llvm.org/cxx_status.html#cxx17) - Clang对C++17的支持
+- [MSVC C++17 Support](https://docs.microsoft.com/en-us/cpp/overview/visual-cpp-language-conformance) - MSVC对C++17的支持
+
+## 学习内容
 
 ### 1. 结构化绑定 (Structured Bindings)
-**概念：** 允许从tuple、pair、array等容器中直接解包多个值。
+
+结构化绑定允许从数组、tuple、pair或自定义类型中解包多个值到单独的变量中。
 
 ```cpp
 #include <iostream>
 #include <tuple>
 #include <map>
-#include <string>
+#include <array>
 
-void structuredBindingExamples() {
-    // 1. 从std::pair解包
-    std::pair<int, std::string> person{25, "Alice"};
-    auto [age, name] = person;
-    std::cout << name << " is " << age << " years old" << std::endl;
-    
-    // 2. 从std::tuple解包
-    std::tuple<int, double, std::string> data{42, 3.14, "Hello"};
-    auto [i, d, s] = data;
-    std::cout << "Values: " << i << ", " << d << ", " << s << std::endl;
-    
-    // 3. 从数组解包
+// 基本使用
+void structured_binding_basics() {
+    // 1. 数组解构
     int arr[3] = {1, 2, 3};
-    auto [x, y, z] = arr;
-    std::cout << "Array: " << x << ", " << y << ", " << z << std::endl;
+    auto [a, b, c] = arr;
+    std::cout << "Array: " << a << ", " << b << ", " << c << std::endl;
     
-    // 4. 在range-based for循环中使用
-    std::map<std::string, int> scores{
-        {"Alice", 95}, {"Bob", 87}, {"Charlie", 92}
+    // 2. std::pair 解构
+    std::pair<int, std::string> p = {42, "hello"};
+    auto [id, message] = p;
+    std::cout << "Pair: " << id << ", " << message << std::endl;
+    
+    // 3. std::tuple 解构
+    std::tuple<int, double, std::string> t = {1, 3.14, "world"};
+    auto [num, pi, str] = t;
+    std::cout << "Tuple: " << num << ", " << pi << ", " << str << std::endl;
+}
+
+// 在循环中使用
+void structured_binding_in_loops() {
+    std::map<std::string, int> scores = {
+        {"Alice", 95},
+        {"Bob", 87},
+        {"Charlie", 92}
     };
     
+    // 遍历map时自动解构key-value对
     for (const auto& [name, score] : scores) {
         std::cout << name << ": " << score << std::endl;
     }
-    
-    // 5. 从函数返回值解包
-    auto getCoordinates = []() -> std::tuple<double, double> {
-        return {3.14, 2.71};
-    };
-    
-    auto [pi, e] = getCoordinates();
-    std::cout << "π = " << pi << ", e = " << e << std::endl;
+}
+
+// 自定义类型支持结构化绑定
+struct Point {
+    double x, y, z;
+};
+
+// 方法1：使用tuple-like接口
+template<size_t N>
+auto get(const Point& p) {
+    if constexpr (N == 0) return p.x;
+    else if constexpr (N == 1) return p.y;
+    else if constexpr (N == 2) return p.z;
+}
+
+// 特化std::tuple_size和std::tuple_element
+template<>
+struct std::tuple_size<Point> : std::integral_constant<size_t, 3> {};
+
+template<size_t N>
+struct std::tuple_element<N, Point> {
+    using type = double;
+};
+
+void custom_structured_binding() {
+    Point p{1.0, 2.0, 3.0};
+    auto [x, y, z] = p;
+    std::cout << "Point: (" << x << ", " << y << ", " << z << ")" << std::endl;
 }
 ```
 
 ### 2. if constexpr
-**概念：** 编译时条件判断，根据模板参数在编译时选择不同的代码路径。
+
+`if constexpr` 允许在编译时进行条件编译，特别适用于模板编程。
 
 ```cpp
 #include <type_traits>
+#include <iostream>
 #include <vector>
-#include <list>
+#include <string>
 
+// 基本使用
 template<typename T>
-void printContainer(const T& container) {
-    if constexpr (std::is_same_v<T, std::vector<typename T::value_type>>) {
-        std::cout << "Vector with " << container.size() << " elements:" << std::endl;
-        for (size_t i = 0; i < container.size(); ++i) {
-            std::cout << "  [" << i << "] = " << container[i] << std::endl;
-        }
-    } else if constexpr (std::is_same_v<T, std::list<typename T::value_type>>) {
-        std::cout << "List with " << container.size() << " elements:" << std::endl;
-        int index = 0;
-        for (const auto& item : container) {
-            std::cout << "  [" << index++ << "] = " << item << std::endl;
-        }
-    } else {
-        std::cout << "Generic container:" << std::endl;
-        for (const auto& item : container) {
-            std::cout << "  " << item << std::endl;
-        }
+void process_type() {
+    if constexpr (std::is_integral_v<T>) {
+        std::cout << "Processing integer type" << std::endl;
+        T value = 42;
+        std::cout << "Value: " << value << std::endl;
+    }
+    else if constexpr (std::is_floating_point_v<T>) {
+        std::cout << "Processing floating point type" << std::endl;
+        T value = 3.14;
+        std::cout << "Value: " << value << std::endl;
+    }
+    else if constexpr (std::is_same_v<T, std::string>) {
+        std::cout << "Processing string type" << std::endl;
+        T value = "Hello, World!";
+        std::cout << "Value: " << value << std::endl;
+    }
+    else {
+        std::cout << "Processing other type" << std::endl;
     }
 }
 
-// 编译时类型检查和优化
+// 递归模板中的应用
 template<typename T>
-constexpr auto getValue(T&& value) {
-    if constexpr (std::is_integral_v<std::decay_t<T>>) {
-        return value * 2;  // 整数类型：乘以2
-    } else if constexpr (std::is_floating_point_v<std::decay_t<T>>) {
-        return value / 2.0;  // 浮点类型：除以2
+constexpr auto factorial(T n) {
+    if constexpr (std::is_integral_v<T>) {
+        return (n <= 1) ? 1 : n * factorial(n - 1);
     } else {
-        return value;  // 其他类型：原样返回
+        static_assert(std::is_integral_v<T>, "Factorial requires integral type");
     }
+}
+
+// 容器特化处理
+template<typename Container>
+void print_container(const Container& container) {
+    std::cout << "Container contents: ";
+    
+    if constexpr (std::is_same_v<Container, std::string>) {
+        std::cout << "\"" << container << "\"";
+    }
+    else {
+        std::cout << "[";
+        bool first = true;
+        for (const auto& item : container) {
+            if (!first) std::cout << ", ";
+            std::cout << item;
+            first = false;
+        }
+        std::cout << "]";
+    }
+    std::cout << std::endl;
+}
+
+void if_constexpr_examples() {
+    process_type<int>();
+    process_type<double>();
+    process_type<std::string>();
+    
+    constexpr auto fact5 = factorial(5);
+    std::cout << "5! = " << fact5 << std::endl;
+    
+    std::vector<int> vec = {1, 2, 3, 4, 5};
+    std::string str = "Hello";
+    print_container(vec);
+    print_container(str);
 }
 ```
 
 ### 3. std::optional
-**概念：** 表示可能存在也可能不存在的值，替代使用指针或特殊值表示"无值"的情况。
+
+`std::optional` 表示一个可能存在也可能不存在的值，替代了传统的指针或特殊值来表示"无值"状态。
 
 ```cpp
 #include <optional>
 #include <iostream>
 #include <string>
+#include <vector>
 
-class UserDatabase {
+class Database {
 private:
-    std::map<int, std::string> users{
-        {1, "Alice"}, {2, "Bob"}, {3, "Charlie"}
+    std::vector<std::pair<int, std::string>> users = {
+        {1, "Alice"},
+        {2, "Bob"},
+        {3, "Charlie"}
     };
     
 public:
-    // 返回optional，避免异常或特殊值
-    std::optional<std::string> findUser(int id) const {
-        auto it = users.find(id);
-        if (it != users.end()) {
-            return it->second;  // 隐式转换为optional
+    // 返回optional而不是指针或异常
+    std::optional<std::string> findUserName(int id) {
+        for (const auto& [userId, userName] : users) {
+            if (userId == id) {
+                return userName; // 隐式构造optional
+            }
         }
-        return std::nullopt;  // 明确表示无值
+        return std::nullopt; // 明确表示无值
     }
     
-    // 安全的数值转换
-    static std::optional<int> safeStringToInt(const std::string& str) {
+    // 解析字符串为整数
+    std::optional<int> parseInteger(const std::string& str) {
         try {
             return std::stoi(str);
         } catch (const std::exception&) {
@@ -125,413 +231,421 @@ public:
     }
 };
 
-void optionalExamples() {
-    UserDatabase db;
+void optional_examples() {
+    Database db;
     
     // 1. 基本使用
-    auto user = db.findUser(1);
-    if (user) {  // 或者 user.has_value()
-        std::cout << "Found user: " << *user << std::endl;  // 或者 user.value()
+    auto userName = db.findUserName(2);
+    if (userName.has_value()) {
+        std::cout << "Found user: " << userName.value() << std::endl;
     } else {
         std::cout << "User not found" << std::endl;
     }
     
     // 2. 使用value_or提供默认值
-    std::string userName = db.findUser(999).value_or("Unknown");
-    std::cout << "User name: " << userName << std::endl;
+    auto unknownUser = db.findUserName(99);
+    std::cout << "User name: " << unknownUser.value_or("Unknown") << std::endl;
     
-    // 3. 链式操作
-    auto processUser = [](int id) -> std::optional<std::string> {
-        UserDatabase db;
-        auto user = db.findUser(id);
-        if (user) {
-            return "Hello, " + *user + "!";
+    // 3. 解构optional
+    if (auto name = db.findUserName(1); name) {
+        std::cout << "User 1: " << *name << std::endl;
+    }
+    
+    // 4. 链式操作
+    auto result = db.parseInteger("42");
+    if (result) {
+        std::cout << "Parsed integer: " << *result << std::endl;
+    }
+    
+    // 5. 使用and_then进行链式操作 (C++23特性，这里展示概念)
+    auto processUser = [&](int id) -> std::optional<std::string> {
+        if (auto name = db.findUserName(id); name) {
+            return "Hello, " + *name + "!";
         }
         return std::nullopt;
     };
     
-    auto greeting = processUser(2);
-    if (greeting) {
+    if (auto greeting = processUser(1); greeting) {
         std::cout << *greeting << std::endl;
     }
-    
-    // 4. 与算法结合使用
-    std::vector<std::string> inputs{"123", "abc", "456", "def"};
-    std::vector<int> numbers;
-    
-    for (const auto& input : inputs) {
-        auto num = UserDatabase::safeStringToInt(input);
-        if (num) {
-            numbers.push_back(*num);
-        }
-    }
-    
-    std::cout << "Converted numbers: ";
-    for (int n : numbers) {
-        std::cout << n << " ";
-    }
-    std::cout << std::endl;
 }
+
+// optional作为成员变量
+class Configuration {
+private:
+    std::optional<std::string> database_url;
+    std::optional<int> port;
+    std::optional<bool> debug_mode;
+    
+public:
+    void setDatabaseUrl(const std::string& url) {
+        database_url = url;
+    }
+    
+    void setPort(int p) {
+        port = p;
+    }
+    
+    void setDebugMode(bool debug) {
+        debug_mode = debug;
+    }
+    
+    std::string getDatabaseUrl() const {
+        return database_url.value_or("localhost:5432");
+    }
+    
+    int getPort() const {
+        return port.value_or(8080);
+    }
+    
+    bool isDebugMode() const {
+        return debug_mode.value_or(false);
+    }
+    
+    void printConfig() const {
+        std::cout << "Database URL: " << getDatabaseUrl() << std::endl;
+        std::cout << "Port: " << getPort() << std::endl;
+        std::cout << "Debug mode: " << (isDebugMode() ? "on" : "off") << std::endl;
+    }
+};
 ```
 
 ### 4. std::variant
-**概念：** 类型安全的union，可以存储多种类型中的一种。
+
+`std::variant` 是一个类型安全的union，可以在运行时持有多种类型中的一种。
 
 ```cpp
 #include <variant>
 #include <iostream>
+#include <string>
 #include <vector>
 
+// 基本使用
 using Value = std::variant<int, double, std::string>;
 
-class Calculator {
-public:
-    static Value add(const Value& a, const Value& b) {
-        return std::visit([](const auto& x, const auto& y) -> Value {
-            using T = std::decay_t<decltype(x)>;
-            using U = std::decay_t<decltype(y)>;
-            
-            if constexpr (std::is_same_v<T, std::string> || std::is_same_v<U, std::string>) {
-                // 字符串连接
-                return toString(x) + toString(y);
-            } else if constexpr (std::is_arithmetic_v<T> && std::is_arithmetic_v<U>) {
-                // 数值相加
-                return x + y;
-            } else {
-                throw std::runtime_error("Unsupported operation");
-            }
-        }, a, b);
-    }
+void variant_basics() {
+    Value v1 = 42;
+    Value v2 = 3.14;
+    Value v3 = "hello";
     
-    static void printValue(const Value& value) {
-        std::visit([](const auto& v) {
-            std::cout << "Value: " << v << " (type: " << typeid(v).name() << ")" << std::endl;
-        }, value);
-    }
-    
-private:
-    template<typename T>
-    static std::string toString(const T& value) {
-        if constexpr (std::is_same_v<T, std::string>) {
-            return value;
-        } else {
-            return std::to_string(value);
-        }
-    }
-};
-
-// 状态机示例
-enum class State { Idle, Running, Paused, Stopped };
-
-using Event = std::variant<
-    struct StartEvent {},
-    struct PauseEvent {},
-    struct ResumeEvent {},
-    struct StopEvent {}
->;
-
-class StateMachine {
-private:
-    State current_state = State::Idle;
-    
-public:
-    void handleEvent(const Event& event) {
-        std::visit([this](const auto& e) {
-            using EventType = std::decay_t<decltype(e)>;
-            
-            if constexpr (std::is_same_v<EventType, StartEvent>) {
-                if (current_state == State::Idle) {
-                    current_state = State::Running;
-                    std::cout << "Started" << std::endl;
-                }
-            } else if constexpr (std::is_same_v<EventType, PauseEvent>) {
-                if (current_state == State::Running) {
-                    current_state = State::Paused;
-                    std::cout << "Paused" << std::endl;
-                }
-            } else if constexpr (std::is_same_v<EventType, ResumeEvent>) {
-                if (current_state == State::Paused) {
-                    current_state = State::Running;
-                    std::cout << "Resumed" << std::endl;
-                }
-            } else if constexpr (std::is_same_v<EventType, StopEvent>) {
-                current_state = State::Stopped;
-                std::cout << "Stopped" << std::endl;
-            }
-        }, event);
-    }
-    
-    State getState() const { return current_state; }
-};
-
-void variantExamples() {
-    // 1. 基本使用
-    std::vector<Value> values{42, 3.14, std::string("Hello")};
-    
-    for (const auto& value : values) {
-        Calculator::printValue(value);
-    }
-    
-    // 2. 类型检查和访问
-    Value v = 42;
-    if (std::holds_alternative<int>(v)) {
-        std::cout << "Integer value: " << std::get<int>(v) << std::endl;
-    }
-    
-    // 3. 安全访问
+    // 1. 使用std::get检查和获取值
     try {
-        auto str = std::get<std::string>(v);  // 会抛异常
+        std::cout << "v1 as int: " << std::get<int>(v1) << std::endl;
+        std::cout << "v2 as double: " << std::get<double>(v2) << std::endl;
+        std::cout << "v3 as string: " << std::get<std::string>(v3) << std::endl;
+        
+        // 这会抛出异常
+        // std::cout << std::get<int>(v2) << std::endl;
     } catch (const std::bad_variant_access& e) {
         std::cout << "Bad variant access: " << e.what() << std::endl;
     }
     
-    // 4. 使用get_if进行安全访问
-    if (auto* ptr = std::get_if<int>(&v)) {
-        std::cout << "Integer value (safe): " << *ptr << std::endl;
+    // 2. 使用std::get_if安全获取值
+    if (auto* pval = std::get_if<int>(&v1)) {
+        std::cout << "v1 contains int: " << *pval << std::endl;
     }
     
-    // 5. 状态机示例
-    StateMachine sm;
-    sm.handleEvent(StartEvent{});
-    sm.handleEvent(PauseEvent{});
-    sm.handleEvent(ResumeEvent{});
-    sm.handleEvent(StopEvent{});
+    // 3. 检查当前持有的类型索引
+    std::cout << "v1 index: " << v1.index() << std::endl; // 0 (int)
+    std::cout << "v2 index: " << v2.index() << std::endl; // 1 (double)
+    std::cout << "v3 index: " << v3.index() << std::endl; // 2 (string)
+    
+    // 4. 使用std::holds_alternative检查类型
+    if (std::holds_alternative<std::string>(v3)) {
+        std::cout << "v3 holds a string" << std::endl;
+    }
 }
+
+// 使用std::visit处理variant
+struct VariantPrinter {
+    void operator()(int i) const {
+        std::cout << "Integer: " << i << std::endl;
+    }
+    
+    void operator()(double d) const {
+        std::cout << "Double: " << d << std::endl;
+    }
+    
+    void operator()(const std::string& s) const {
+        std::cout << "String: " << s << std::endl;
+    }
+};
+
+void variant_visitor() {
+    std::vector<Value> values = {42, 3.14, "world", 100, 2.71};
+    
+    for (const auto& value : values) {
+        // 使用函数对象访问
+        std::visit(VariantPrinter{}, value);
+        
+        // 使用lambda访问
+        std::visit([](const auto& v) {
+            using T = std::decay_t<decltype(v)>;
+            if constexpr (std::is_same_v<T, int>) {
+                std::cout << "  -> This is an integer\n";
+            } else if constexpr (std::is_same_v<T, double>) {
+                std::cout << "  -> This is a double\n";
+            } else if constexpr (std::is_same_v<T, std::string>) {
+                std::cout << "  -> This is a string\n";
+            }
+        }, value);
+    }
+}
+
+// 实际应用：JSON值表示
+using JsonValue = std::variant<
+    std::nullptr_t,
+    bool,
+    int,
+    double,
+    std::string,
+    std::vector<JsonValue>,
+    std::map<std::string, JsonValue>
+>;
+
+class JsonPrinter {
+public:
+    void operator()(std::nullptr_t) const {
+        std::cout << "null";
+    }
+    
+    void operator()(bool b) const {
+        std::cout << (b ? "true" : "false");
+    }
+    
+    void operator()(int i) const {
+        std::cout << i;
+    }
+    
+    void operator()(double d) const {
+        std::cout << d;
+    }
+    
+    void operator()(const std::string& s) const {
+        std::cout << "\"" << s << "\"";
+    }
+    
+    void operator()(const std::vector<JsonValue>& arr) const {
+        std::cout << "[";
+        for (size_t i = 0; i < arr.size(); ++i) {
+            if (i > 0) std::cout << ", ";
+            std::visit(*this, arr[i]);
+        }
+        std::cout << "]";
+    }
+    
+    void operator()(const std::map<std::string, JsonValue>& obj) const {
+        std::cout << "{";
+        bool first = true;
+        for (const auto& [key, value] : obj) {
+            if (!first) std::cout << ", ";
+            std::cout << "\"" << key << "\": ";
+            std::visit(*this, value);
+            first = false;
+        }
+        std::cout << "}";
+    }
+};
 ```
 
 ### 5. 文件系统库 (std::filesystem)
-**概念：** 提供跨平台的文件系统操作接口。
+
+C++17引入了标准文件系统库，提供了跨平台的文件和目录操作。
 
 ```cpp
 #include <filesystem>
 #include <iostream>
 #include <fstream>
+#include <chrono>
 
 namespace fs = std::filesystem;
 
-class FileManager {
-public:
-    static void demonstrateFilesystem() {
-        try {
-            // 1. 路径操作
-            fs::path currentPath = fs::current_path();
-            std::cout << "Current path: " << currentPath << std::endl;
-            
-            fs::path filePath = currentPath / "example.txt";
-            std::cout << "File path: " << filePath << std::endl;
-            std::cout << "Filename: " << filePath.filename() << std::endl;
-            std::cout << "Extension: " << filePath.extension() << std::endl;
-            
-            // 2. 创建文件
-            {
-                std::ofstream file(filePath);
-                file << "Hello, C++17 filesystem!" << std::endl;
-            }
-            
-            // 3. 检查文件状态
-            if (fs::exists(filePath)) {
-                std::cout << "File exists" << std::endl;
-                std::cout << "File size: " << fs::file_size(filePath) << " bytes" << std::endl;
-                
-                auto lastWrite = fs::last_write_time(filePath);
-                std::cout << "Last modified: " << 
-                    std::chrono::duration_cast<std::chrono::seconds>(
-                        lastWrite.time_since_epoch()).count() << std::endl;
-            }
-            
-            // 4. 创建目录
-            fs::path dirPath = currentPath / "test_directory";
-            fs::create_directory(dirPath);
-            
-            // 5. 遍历目录
-            std::cout << "Directory contents:" << std::endl;
-            for (const auto& entry : fs::directory_iterator(currentPath)) {
-                std::cout << "  " << entry.path().filename();
-                if (entry.is_directory()) {
-                    std::cout << " (directory)";
-                } else if (entry.is_regular_file()) {
-                    std::cout << " (file, " << entry.file_size() << " bytes)";
-                }
-                std::cout << std::endl;
-            }
-            
-            // 6. 递归遍历
-            std::cout << "Recursive directory contents:" << std::endl;
-            for (const auto& entry : fs::recursive_directory_iterator(currentPath)) {
-                std::cout << "  " << entry.path() << std::endl;
-            }
-            
-            // 7. 复制和移动文件
-            fs::path copyPath = currentPath / "example_copy.txt";
-            fs::copy_file(filePath, copyPath);
-            
-            fs::path movePath = currentPath / "example_moved.txt";
-            fs::rename(copyPath, movePath);
-            
-            // 8. 清理
-            fs::remove(filePath);
-            fs::remove(movePath);
-            fs::remove(dirPath);
-            
-        } catch (const fs::filesystem_error& e) {
-            std::cerr << "Filesystem error: " << e.what() << std::endl;
-        }
+void filesystem_examples() {
+    // 1. 路径操作
+    fs::path p1 = "/home/user/documents/file.txt";
+    fs::path p2 = "C:\\Users\\User\\Documents\\file.txt";
+    
+    std::cout << "Filename: " << p1.filename() << std::endl;
+    std::cout << "Extension: " << p1.extension() << std::endl;
+    std::cout << "Parent path: " << p1.parent_path() << std::endl;
+    std::cout << "Stem: " << p1.stem() << std::endl;
+    
+    // 2. 路径构建
+    fs::path base = "/tmp";
+    fs::path filename = "test.txt";
+    fs::path full_path = base / filename;
+    std::cout << "Full path: " << full_path << std::endl;
+    
+    // 3. 文件和目录检查
+    fs::path current_dir = fs::current_path();
+    std::cout << "Current directory: " << current_dir << std::endl;
+    
+    if (fs::exists(current_dir)) {
+        std::cout << "Current directory exists" << std::endl;
     }
     
-    // 实用工具函数
-    static std::vector<fs::path> findFiles(const fs::path& directory, 
-                                          const std::string& extension) {
-        std::vector<fs::path> result;
-        
-        if (!fs::exists(directory) || !fs::is_directory(directory)) {
-            return result;
-        }
-        
-        for (const auto& entry : fs::recursive_directory_iterator(directory)) {
-            if (entry.is_regular_file() && 
-                entry.path().extension() == extension) {
-                result.push_back(entry.path());
-            }
-        }
-        
-        return result;
+    if (fs::is_directory(current_dir)) {
+        std::cout << "It's a directory" << std::endl;
     }
     
-    static uintmax_t calculateDirectorySize(const fs::path& directory) {
-        uintmax_t size = 0;
-        
-        if (!fs::exists(directory) || !fs::is_directory(directory)) {
-            return size;
+    // 4. 创建目录
+    fs::path test_dir = current_dir / "test_directory";
+    try {
+        if (fs::create_directory(test_dir)) {
+            std::cout << "Directory created: " << test_dir << std::endl;
         }
         
-        for (const auto& entry : fs::recursive_directory_iterator(directory)) {
-            if (entry.is_regular_file()) {
-                size += entry.file_size();
-            }
-        }
+        // 创建多级目录
+        fs::path nested_dir = test_dir / "sub1" / "sub2";
+        fs::create_directories(nested_dir);
+        std::cout << "Nested directories created: " << nested_dir << std::endl;
         
-        return size;
+    } catch (const fs::filesystem_error& e) {
+        std::cout << "Filesystem error: " << e.what() << std::endl;
     }
-};
-```
-
-### 6. 其他重要特性
-
-#### 6.1 类模板参数推导 (Class Template Argument Deduction)
-```cpp
-#include <vector>
-#include <utility>
-
-void ctadExamples() {
-    // C++17之前需要显式指定模板参数
-    // std::vector<int> vec{1, 2, 3, 4, 5};
     
-    // C++17可以自动推导
-    std::vector vec{1, 2, 3, 4, 5};  // 推导为std::vector<int>
-    std::pair p{42, 3.14};           // 推导为std::pair<int, double>
+    // 5. 遍历目录
+    std::cout << "\nDirectory contents:" << std::endl;
+    for (const auto& entry : fs::directory_iterator(current_dir)) {
+        std::cout << entry.path().filename();
+        if (entry.is_directory()) {
+            std::cout << " [DIR]";
+        } else if (entry.is_regular_file()) {
+            std::cout << " [FILE] (" << entry.file_size() << " bytes)";
+        }
+        std::cout << std::endl;
+    }
     
-    // 自定义类也可以支持
-    template<typename T>
-    class MyContainer {
-        std::vector<T> data;
-    public:
-        MyContainer(std::initializer_list<T> init) : data(init) {}
-        MyContainer(const std::vector<T>& vec) : data(vec) {}
-    };
+    // 6. 递归遍历
+    std::cout << "\nRecursive directory contents:" << std::endl;
+    for (const auto& entry : fs::recursive_directory_iterator(current_dir)) {
+        // 计算深度
+        auto relative_path = fs::relative(entry.path(), current_dir);
+        auto depth = std::distance(relative_path.begin(), relative_path.end()) - 1;
+        
+        std::cout << std::string(depth * 2, ' ') << entry.path().filename();
+        if (entry.is_directory()) {
+            std::cout << "/";
+        }
+        std::cout << std::endl;
+    }
     
-    MyContainer container{1, 2, 3, 4};  // 推导为MyContainer<int>
+    // 7. 文件操作
+    fs::path test_file = test_dir / "example.txt";
+    
+    // 创建文件
+    {
+        std::ofstream ofs(test_file);
+        ofs << "Hello, filesystem!" << std::endl;
+    }
+    
+    if (fs::exists(test_file)) {
+        // 获取文件信息
+        auto file_size = fs::file_size(test_file);
+        auto last_write_time = fs::last_write_time(test_file);
+        
+        std::cout << "\nFile info:" << std::endl;
+        std::cout << "Size: " << file_size << " bytes" << std::endl;
+        
+        // 文件权限
+        auto perms = fs::status(test_file).permissions();
+        std::cout << "Permissions: ";
+        std::cout << ((perms & fs::perms::owner_read) != fs::perms::none ? "r" : "-");
+        std::cout << ((perms & fs::perms::owner_write) != fs::perms::none ? "w" : "-");
+        std::cout << ((perms & fs::perms::owner_exec) != fs::perms::none ? "x" : "-");
+        std::cout << std::endl;
+        
+        // 复制文件
+        fs::path copy_file = test_dir / "copy_example.txt";
+        fs::copy_file(test_file, copy_file);
+        std::cout << "File copied to: " << copy_file << std::endl;
+        
+        // 移动/重命名文件
+        fs::path renamed_file = test_dir / "renamed_example.txt";
+        fs::rename(copy_file, renamed_file);
+        std::cout << "File renamed to: " << renamed_file << std::endl;
+    }
+    
+    // 8. 清理
+    try {
+        fs::remove_all(test_dir);
+        std::cout << "Test directory removed" << std::endl;
+    } catch (const fs::filesystem_error& e) {
+        std::cout << "Error removing directory: " << e.what() << std::endl;
+    }
 }
 ```
 
-#### 6.2 内联变量 (Inline Variables)
+## 其他C++17特性
+
+### 内联变量 (Inline Variables)
 ```cpp
-// header.h
+// 头文件中定义内联变量
 class Config {
 public:
-    inline static const int MAX_SIZE = 1000;  // C++17内联变量
-    inline static const std::string DEFAULT_NAME = "Unknown";
+    static inline std::string app_name = "MyApp";
+    static inline int version = 1;
 };
 
-// 不需要在.cpp文件中定义，避免链接错误
+// 全局内联变量
+inline constexpr double PI = 3.14159265359;
 ```
 
-#### 6.3 折叠表达式 (Fold Expressions)
+### 折叠表达式 (Fold Expressions)
 ```cpp
-#include <iostream>
-
-// 可变参数模板的简化
+// 可变参数模板的折叠表达式
 template<typename... Args>
 auto sum(Args... args) {
-    return (args + ...);  // 折叠表达式
+    return (args + ...); // 右折叠
 }
 
 template<typename... Args>
 void print(Args... args) {
-    ((std::cout << args << " "), ...);  // 折叠表达式
+    ((std::cout << args << " "), ...); // 左折叠
     std::cout << std::endl;
 }
 
-template<typename... Args>
-bool allTrue(Args... args) {
-    return (args && ...);  // 逻辑与折叠
-}
-
-void foldExpressionExamples() {
-    std::cout << "Sum: " << sum(1, 2, 3, 4, 5) << std::endl;
-    print("Hello", "World", 42, 3.14);
-    std::cout << "All true: " << allTrue(true, true, false) << std::endl;
+void fold_expressions_example() {
+    std::cout << sum(1, 2, 3, 4, 5) << std::endl; // 15
+    print("Hello", "World", 42, 3.14); // Hello World 42 3.14
 }
 ```
 
 ## 实践练习
 
-### 练习1：使用结构化绑定优化代码
-```cpp
-// 重写现有代码，使用结构化绑定提高可读性
-// 例如：处理map的迭代、函数返回多个值等
-```
+### 练习1：配置管理器
+使用std::optional和std::variant实现一个配置管理器：
+- 支持多种配置值类型
+- 支持默认值
+- 支持配置验证
 
-### 练习2：用std::optional重构错误处理
-```cpp
-// 将使用异常或特殊值的错误处理改为使用optional
-// 提高代码的安全性和可读性
-```
+### 练习2：文件处理工具
+使用std::filesystem实现一个文件处理工具：
+- 递归搜索文件
+- 文件过滤和分类
+- 批量文件操作
 
-### 练习3：std::variant实现多态
-```cpp
-// 使用variant替代虚函数实现多态
-// 比较性能和代码复杂度
-```
+### 练习3：JSON解析器
+使用std::variant实现一个简单的JSON解析器：
+- 支持基本JSON类型
+- 支持嵌套结构
+- 支持序列化和反序列化
 
-## 重点总结
+### 练习4：模板元编程
+使用if constexpr实现类型特性检查：
+- 容器类型检查
+- 成员函数存在性检查
+- 编译时算法选择
 
-1. **结构化绑定**：简化多值返回和容器遍历
-2. **if constexpr**：编译时条件判断，提高模板代码质量
-3. **std::optional**：安全的可选值表示
-4. **std::variant**：类型安全的union替代方案
-5. **文件系统库**：跨平台文件操作
-6. **CTAD**：简化模板类的使用
-7. **折叠表达式**：简化可变参数模板
+## 今日总结
+通过学习C++17新特性，你应该掌握：
+1. 结构化绑定的使用方法和应用场景
+2. if constexpr在模板编程中的应用
+3. std::optional处理可选值的最佳实践
+4. std::variant实现类型安全的联合体
+5. std::filesystem进行文件系统操作
 
-## 迁移建议
+## 明天预告
+明天我们将学习C++20的新特性，包括概念(Concepts)、协程(Coroutines)、模块(Modules)等更加现代的C++特性。
 
-1. **渐进式采用**：在新代码中使用新特性
-2. **兼容性考虑**：确保编译器支持C++17
-3. **性能测试**：验证新特性的性能影响
-4. **团队培训**：确保团队理解新特性
-5. **代码审查**：在代码审查中推广最佳实践
-
-## 注意事项
-
-1. **编译器支持**：确保目标编译器完全支持C++17
-2. **标准库实现**：某些特性可能在不同标准库实现中有差异
-3. **性能考虑**：新特性可能引入额外开销
-4. **可读性平衡**：不要为了使用新特性而牺牲代码可读性
-5. **向后兼容**：考虑与旧版本C++的兼容性
-
-## 拓展阅读
-
-- C++17标准文档
-- 《C++17 The Complete Guide》
-- cppreference.com的C++17特性介绍
-- Herb Sutter和Bjarne Stroustrup的相关演讲
+[返回第四周](/plan/week4/) | [上一天：第24天](/plan/week4/day24/) | [下一天：第26天](/plan/week4/day26/)
