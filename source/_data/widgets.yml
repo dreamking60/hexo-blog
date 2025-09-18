@@ -50,22 +50,27 @@ toc:
   fallback: recent
   collapse: false
 
-# C++ 学习计划导航组件
+# 学习计划导航组件
 plan_nav:
   layout: markdown
-  title: C++ 学习计划
+  title: 学习计划中心
   content: |
-    📚 **4周系统学习计划**
+    📚 **学习计划导航**
     
-    🔗 **快速导航**
-    - [📖 计划概览](/plan/)
-    - [📅 第一周：基础语法](/plan/week1/)
-    - [🏗️ 第二周：面向对象](/plan/week2/) 
-    - [⚡ 第三周：STL与高级特性](/plan/week3/)
-    - [🚀 第四周：高级主题与实战](/plan/week4/)
+    🔥 **C++ 4周学习计划**
+    - [📖 C++计划概览](/plan/cpp/)
+    - [📅 第一周：基础语法](/plan/cpp/week1/)
+    - [🏗️ 第二周：面向对象](/plan/cpp/week2/) 
+    - [⚡ 第三周：STL特性](/plan/cpp/week3/)
+    - [🚀 第四周：高级实战](/plan/cpp/week4/)
+    
+    🧮 **算法一周学习计划**
+    - [📖 算法计划概览](/plan/algorithm/)
+    - [📅 第一周：DP/Tree/Map](/plan/algorithm/week1/)
     
     💡 **学习进度**
-    - [ ] Week 1: 基础语法与内存管理
-    - [ ] Week 2: 面向对象编程
-    - [ ] Week 3: STL与高级特性
-    - [ ] Week 4: 高级主题与实战
+    - [ ] C++ Week 1: 基础语法与内存管理
+    - [ ] C++ Week 2: 面向对象编程
+    - [ ] C++ Week 3: STL与高级特性
+    - [ ] C++ Week 4: 高级主题与实战
+    - [ ] 算法 Day 1-7: DP/Tree/Map核心算法
