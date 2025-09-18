@@ -1,4 +1,4 @@
----
+﻿---
 title: C++ virtual function
 date: 2025-09-01 18:00:00
 categories: Cpp

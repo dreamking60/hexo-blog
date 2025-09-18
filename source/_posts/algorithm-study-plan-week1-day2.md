@@ -1,5 +1,5 @@
----
-title: 算法学习计划 - 第2天：动态规划进阶
+﻿---
+title: 算法学习计划 - 第2天:动态规划进阶
 date: 2025-09-16 10:03:00
 categories: Algorithm
 tags:

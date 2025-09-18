@@ -1,5 +1,5 @@
----
-title: C++ 学习计划 - 第10天：继承
+﻿---
+title: C++ 学习计划 - 第10天:继承
 date: 2025-09-16 10:20:00
 categories: Cpp
 tags:

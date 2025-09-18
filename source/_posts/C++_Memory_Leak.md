@@ -1,4 +1,4 @@
----
+﻿---
 title: C++ Memory Leak
 date: 2025-09-01 17:15:00
 categories: Cpp
